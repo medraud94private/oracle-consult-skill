@@ -58,6 +58,40 @@ The wizard lets you choose a language, install scope, install target, and whethe
 
 Install modes are intentionally name-separated: standalone skills install as `oracle-consult-skill`, while plugins keep the `oracle-consult` namespace. If you are upgrading from an older standalone install, use `-Force` / `--force`; the installer removes the old standalone `oracle-consult` skill folder when it matches this package's safety marker.
 
+## Update
+
+Existing users have two supported update paths.
+
+If you keep a local `oracle-consult-skill` checkout, update it with git and reinstall into the target project:
+
+```bash
+cd /path/to/oracle-consult-skill
+git pull
+./install.sh --language ko --preset all --scope repo --repo-path /path/to/your-project --force --no-prompt --no-open-oracle
+```
+
+If you only want to install/update from the latest GitHub version without managing a checkout, run this from the project where you want Oracle Consult installed:
+
+```bash
+cd /path/to/your-project
+curl -fsSL https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.sh | bash
+```
+
+With no arguments, this downloads the latest GitHub archive into a temporary directory and runs:
+
+```bash
+./install.sh --language auto --preset all --scope repo --repo-path "$PWD" --force --no-prompt --no-open-oracle
+```
+
+Windows without PowerShell:
+
+```bat
+cd C:\path\to\your-project
+curl -fsSLO https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.cmd
+install-latest.cmd
+del install-latest.cmd
+```
+
 Non-interactive repository-level install on Windows:
 
 ```powershell
