@@ -28,6 +28,9 @@ install-latest.cmd
 del install-latest.cmd
 ```
 
+<details>
+<summary>Optional: install from a local git checkout</summary>
+
 If you prefer to keep a local copy of this installer repo, clone the public repository, then run the installer wizard:
 
 ```powershell
@@ -58,6 +61,14 @@ cd oracle-consult-skill
 ./install.sh
 ```
 
+If you downloaded a zip instead of cloning with git, make the scripts executable first:
+
+```bash
+chmod +x install.sh scripts/open-oracle-login.sh
+```
+
+</details>
+
 macOS prerequisites for real Oracle browser consults:
 
 ```bash
@@ -66,29 +77,15 @@ brew install node
 
 You also need Chrome installed and a ChatGPT account you can sign into when Oracle opens the browser.
 
-If you downloaded a zip instead of cloning with git, make the scripts executable first:
-
-```bash
-chmod +x install.sh scripts/open-oracle-login.sh
-```
-
 The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted. The no-git latest installer skips the wizard by default and uses the directory you ran it from as the target repo.
 
 Install modes are intentionally name-separated: standalone skills install as `oracle-consult-skill`, while plugins keep the `oracle-consult` namespace. If you are upgrading from an older standalone install, use `-Force` / `--force`; the installer removes the old standalone `oracle-consult` skill folder when it matches this package's safety marker.
 
 ## Update
 
-Existing users have two supported update paths.
+Existing users have two supported update paths. The no-git path is recommended for most users.
 
-If you keep a local `oracle-consult-skill` checkout, update it with git and reinstall into the target project:
-
-```bash
-cd /path/to/oracle-consult-skill
-git pull
-./install.sh --language ko --preset all --scope repo --repo-path /path/to/your-project --force --no-prompt --no-open-oracle
-```
-
-If you only want to install/update from the latest GitHub version without managing a checkout, run this from the project where you want Oracle Consult installed:
+Run this from the project where you want Oracle Consult installed:
 
 ```bash
 cd /path/to/your-project
@@ -109,6 +106,22 @@ curl -fsSLO https://raw.githubusercontent.com/medraud94private/oracle-consult-sk
 install-latest.cmd
 del install-latest.cmd
 ```
+
+<details>
+<summary>Optional: update from a local git checkout</summary>
+
+If you keep a local `oracle-consult-skill` checkout, update it with git and reinstall into the target project:
+
+```bash
+cd /path/to/oracle-consult-skill
+git pull
+./install.sh --language ko --preset all --scope repo --repo-path /path/to/your-project --force --no-prompt --no-open-oracle
+```
+
+</details>
+
+<details>
+<summary>Advanced: direct installer commands from a local checkout</summary>
 
 Non-interactive repository-level install on Windows:
 
@@ -177,6 +190,8 @@ On macOS/Linux:
 ```
 
 Oracle login cannot be fully automated because the user must sign in to ChatGPT manually. The script can open Oracle's persistent Chrome profile, keep the browser open, and send only a harmless setup-check prompt after you approve it.
+
+</details>
 
 ## Does It Require Oracle?
 
