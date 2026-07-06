@@ -4,6 +4,8 @@ Codex skill for using `steipete/oracle` as an advisory second-opinion lane.
 
 Oracle is for pressure-testing plans, debugging hypotheses, code reviews, and "what am I missing?" passes. It is not product runtime, deployment proof, persona output, or a substitute for local verification.
 
+Korean guide: [docs/guide-ko.md](docs/guide-ko.md)
+
 ## Does It Require Oracle?
 
 Yes for the main workflow. This skill is a Codex instruction wrapper around the `@steipete/oracle` CLI. Without Oracle installed or runnable through `npx`, Codex can still read the skill's safety rules and prompt patterns, but it cannot perform the actual GPT-5.5 Pro consult.
