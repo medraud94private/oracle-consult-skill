@@ -1,20 +1,64 @@
-# oracle-consult-skill 한국어 가이드
+# oracle-consult-skill 처음 쓰는 사람을 위한 가이드
 
-이 저장소는 Codex가 `steipete/oracle`을 안전하게 호출하도록 돕는 Codex 스킬이다.
+이 프로젝트는 Codex나 Claude Code에 "외부 고성능 모델에게 한 번 더 물어보는 작업 절차"를 설치하는 패키지다. 제품 런타임에 모델을 붙이거나, 배포 검증을 대신하거나, 로컬 테스트를 대체하는 도구가 아니다.
 
-목표는 제품 런타임에 모델을 붙이는 것이 아니라, Codex 작업 중 어려운 설계/버그/리뷰를 외부 고성능 모델에게 한 번 더 물어보는 "second opinion" 레인을 만드는 것이다.
+목표는 구현 중 애매한 설계, 어려운 버그, 큰 diff 리뷰, 빠진 테스트 찾기 같은 순간에 Oracle CLI를 통해 ChatGPT GPT-5.5 Pro 같은 모델에게 second opinion을 받고, 그 답을 다시 로컬 파일과 테스트로 검증하는 것이다.
 
-## 한 줄 결론
+## 이 프로젝트가 해결하는 문제
 
-설치만 하면 Codex가 standalone `$oracle-consult-skill` 스킬을 읽고 사용할 수 있다. 다만 실제 GPT-5.5 Pro 컨설트 실행은 `@steipete/oracle` CLI가 필요하다.
+Codex나 Claude Code가 혼자 작업하다 보면 한 방향으로 너무 빨리 굳어질 수 있다. 특히 큰 구조 변경, 회귀 위험, 설계 반론, "내가 놓친 게 뭐지?" 같은 질문은 다른 모델에게 한 번 더 물어보면 도움이 된다.
 
-즉:
+하지만 외부 모델에게 프로젝트 파일을 보내는 일은 조심해야 한다. 그래서 이 프로젝트는 단순히 "더 똑똑한 모델에게 물어봐"가 아니라, 안전한 컨설트 절차를 고정한다.
 
-- 스킬 설치만 있음: Codex가 안전 규칙, 프롬프트 형식, 파일 선택 기준을 사용할 수 있다.
-- Oracle CLI 실행 가능: 실제 브라우저/API 컨설트까지 가능하다.
-- Oracle CLI 없음: 외부 모델 호출은 안 되고, Codex가 컨설트 프롬프트를 준비하는 데까지만 의미가 있다.
+- 언제 Oracle을 쓸지 고른다.
+- 어떤 파일을 보낼지 최소화한다.
+- 실제 전송 전에 dry-run으로 파일 목록과 토큰을 확인한다.
+- Oracle의 답을 정답이 아니라 가설로 다룬다.
+- 받아들일 내용과 버릴 내용을 나눈 뒤, 로컬 테스트와 파일 확인으로 검증한다.
 
-이 repo가 `oracle-consult-skill`이라는 이름인 이유도 이것이다. 현재 실제 실행 백엔드가 Oracle에 강하게 의존한다. 나중에 여러 백엔드를 지원하면 `second-opinion-consult` 같은 중립 이름이 더 맞다.
+## 핵심 방법론
+
+1. 어려운 질문만 고른다.
+   단순 수정, 이미 테스트가 답을 주는 문제, 외부 공유가 위험한 문제에는 쓰지 않는다.
+
+2. 독립 실행 가능한 컨설트 프롬프트를 만든다.
+   프로젝트 배경, 지금 하려는 일, 이미 확인한 증거, 제약, 묻고 싶은 질문을 짧게 정리한다.
+
+3. 보낼 파일을 최소화한다.
+   전체 repo를 던지는 대신 핵심 파일과 좁은 glob을 고른다. `.env`, token, cookie, private key, production log 같은 민감 파일은 보내지 않는다.
+
+4. 먼저 dry-run을 실행한다.
+   `--dry-run summary --files-report`로 실제 첨부될 파일과 대략적인 토큰 사용량을 본다. 이 단계는 모델을 호출하지 않는다.
+
+5. Oracle consult를 실행한다.
+   브라우저 모드라면 ChatGPT 로그인된 Oracle Chrome 프로필을 사용한다. 로그인 이후 일반 consult는 `--browser-hide-window`로 덜 거슬리게 실행할 수 있다.
+
+6. 답을 검증 가능한 항목으로 분해한다.
+   Oracle 답변을 그대로 적용하지 않는다. 받아들일 제안, 거절할 제안, 아직 불확실한 질문, 로컬에서 추가 검증할 일을 나눈다.
+
+7. 로컬 증거로 끝낸다.
+   최종 완료 판단은 Oracle 답이 아니라 로컬 파일, 테스트, 빌드, 실제 실행 증거로 한다.
+
+## 설치하면 생기는 것
+
+설치 대상은 네 가지 형태를 지원한다.
+
+- Codex standalone skill: `$oracle-consult-skill`
+- Codex plugin: `/plugins`에서 Oracle Consult 설치 후 `$oracle-consult`
+- Claude Code standalone skill: `/oracle-consult-skill`
+- Claude Code plugin: `/oracle-consult:oracle-consult`
+
+이름을 일부러 나눠 둔 이유는 standalone skill과 plugin을 둘 다 설치했을 때 헷갈리지 않게 하기 위해서다.
+
+## Oracle과의 관계
+
+이 repo 자체가 GPT-5.5 Pro 접근권을 제공하지는 않는다. 실제 외부 컨설트 실행은 `@steipete/oracle` CLI가 맡는다.
+
+- 스킬/플러그인만 설치됨: 안전 규칙, 프롬프트 형식, 파일 선택 기준을 쓸 수 있다.
+- Oracle CLI와 Node/npx가 실행 가능함: 실제 브라우저/API 컨설트까지 가능하다.
+- ChatGPT 브라우저 모드 사용: 처음 한 번은 Oracle이 여는 Chrome 프로필에서 직접 로그인해야 한다.
+
+현재 실행 백엔드가 Oracle에 강하게 의존하므로 repo 이름은 `oracle-consult-skill`이다. 나중에 여러 백엔드를 지원하면 `second-opinion-consult` 같은 더 중립적인 이름으로 확장할 수 있다.
 
 ## 가장 쉬운 설치
 
