@@ -6,6 +6,38 @@ Oracle is for pressure-testing plans, debugging hypotheses, code reviews, and "w
 
 Korean guide: [docs/guide-ko.md](docs/guide-ko.md)
 
+## Quick Start
+
+Clone the public repository, then run the installer wizard:
+
+```powershell
+git clone https://github.com/medraud94private/oracle-consult-skill.git
+cd oracle-consult-skill
+.\install.ps1
+```
+
+The wizard lets you choose a language, install target, and whether to open Oracle's browser login setup.
+
+Non-interactive recommended install:
+
+```powershell
+.\install.ps1 -Language ko -Preset all -Force -NoPrompt
+```
+
+Install everything and immediately open Oracle's ChatGPT login setup:
+
+```powershell
+.\install.ps1 -Language ko -Preset all -Force -NoPrompt -OpenOracle
+```
+
+Open only Oracle's browser login setup:
+
+```powershell
+.\scripts\open-oracle-login.ps1 -Language ko
+```
+
+Oracle login cannot be fully automated because the user must sign in to ChatGPT manually. The script can open Oracle's persistent Chrome profile, keep the browser open, and send only a harmless setup-check prompt after you approve it.
+
 ## Does It Require Oracle?
 
 Yes for the main workflow. This skill is a Codex instruction wrapper around the `@steipete/oracle` CLI. Without Oracle installed or runnable through `npx`, Codex can still read the skill's safety rules and prompt patterns, but it cannot perform the actual GPT-5.5 Pro consult.
@@ -102,6 +134,7 @@ Then start a new Codex thread, open `/plugins`, search for **Oracle Consult**, a
 ## Validate
 
 ```powershell
+.\install.ps1 -Language en -Preset all -Force -NoPrompt -NoOpenOracle
 .\scripts\validate-skill.ps1
 .\scripts\smoke-oracle.ps1
 .\scripts\validate-claude-skill.ps1
@@ -109,6 +142,7 @@ Then start a new Codex thread, open `/plugins`, search for **Oracle Consult**, a
 .\scripts\validate-codex-plugin.ps1
 .\scripts\validate-claude-plugin.ps1
 .\scripts\smoke-claude-plugin-oracle.ps1
+.\scripts\open-oracle-login.ps1 -Language en -DryRun -Yes
 ```
 
 `smoke-oracle.ps1` uses `--dry-run`; it does not call a model.

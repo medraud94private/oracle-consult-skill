@@ -16,7 +16,48 @@
 
 이 repo가 `oracle-consult-skill`이라는 이름인 이유도 이것이다. 현재 실제 실행 백엔드가 Oracle에 강하게 의존한다. 나중에 여러 백엔드를 지원하면 `second-opinion-consult` 같은 중립 이름이 더 맞다.
 
-## 설치
+## 가장 쉬운 설치
+
+공개 repo를 받은 뒤 installer wizard를 실행한다.
+
+```powershell
+git clone https://github.com/medraud94private/oracle-consult-skill.git
+cd oracle-consult-skill
+.\install.ps1
+```
+
+wizard가 처음에 언어를 묻고, 그 다음 설치 대상을 고르게 한다.
+
+```text
+1. 추천: Codex skill + Codex plugin + Claude Code skill + Claude Code plugin
+2. Codex만
+3. Claude Code만
+4. skill만
+5. plugin만
+6. Oracle 브라우저 로그인만 열기
+```
+
+비대화형으로 한 번에 설치하려면:
+
+```powershell
+.\install.ps1 -Language ko -Preset all -Force -NoPrompt
+```
+
+설치 후 바로 Oracle 브라우저 로그인까지 열고 싶으면:
+
+```powershell
+.\install.ps1 -Language ko -Preset all -Force -NoPrompt -OpenOracle
+```
+
+Oracle 로그인 열기만 따로 하고 싶으면:
+
+```powershell
+.\scripts\open-oracle-login.ps1 -Language ko
+```
+
+주의: ChatGPT 로그인 자체는 자동화하지 않는다. 브라우저가 열리면 사용자가 직접 로그인해야 한다. 스크립트가 자동화할 수 있는 것은 Oracle 전용 Chrome 프로필을 열고, 로그인 확인용으로 비밀이 없는 작은 임시 파일과 짧은 프롬프트를 보내는 단계까지다.
+
+## 수동 설치
 
 저장소를 받은 뒤 PowerShell에서 실행한다.
 
@@ -338,6 +379,7 @@ Oracle dry-run smoke:
 네 가지 표면을 한 번에 확인하려면 아래를 실행한다.
 
 ```powershell
+.\install.ps1 -Language en -Preset all -Force -NoPrompt -NoOpenOracle
 .\scripts\validate-skill.ps1
 .\scripts\validate-claude-skill.ps1
 .\scripts\validate-codex-plugin.ps1
@@ -345,6 +387,7 @@ Oracle dry-run smoke:
 .\scripts\smoke-oracle.ps1
 .\scripts\smoke-claude-oracle.ps1
 .\scripts\smoke-claude-plugin-oracle.ps1
+.\scripts\open-oracle-login.ps1 -Language en -DryRun -Yes
 ```
 
 ## 추천 사용 사례

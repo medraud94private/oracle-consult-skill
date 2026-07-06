@@ -30,6 +30,14 @@ The package does not contain GPT-5.5 Pro access by itself. It teaches Codex or C
 
 ## Supported Install Shapes
 
+The easiest path is the root installer wizard:
+
+```powershell
+.\install.ps1
+```
+
+It asks for language, install target, and optional Oracle browser login setup. The individual install shapes below remain available for automation or advanced use.
+
 | Shape | Source path | Install command | Invocation |
 | --- | --- | --- | --- |
 | Codex skill | `skills/oracle-consult/` | `.\scripts\install-user.ps1` | `$oracle-consult` |
@@ -38,6 +46,14 @@ The package does not contain GPT-5.5 Pro access by itself. It teaches Codex or C
 | Claude Code plugin | `claude/plugins/oracle-consult/` | `.\scripts\install-claude-plugin-user.ps1` or marketplace install | `/oracle-consult:oracle-consult` |
 
 The wrapper shape changes discovery and invocation. It does not change the actual consult backend: real GPT-5.5 Pro consults still go through `@steipete/oracle`.
+
+Oracle browser setup can be started by the wizard or directly:
+
+```powershell
+.\scripts\open-oracle-login.ps1
+```
+
+This opens Oracle's browser-login flow but does not automate ChatGPT credentials or 2FA. The user signs in manually.
 
 ## Wrapper Responsibilities
 
