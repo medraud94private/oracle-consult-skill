@@ -49,6 +49,64 @@ $HOME\.agents\skills\oracle-consult
 <repo>\.agents\skills\oracle-consult
 ```
 
+## Claude Code에서 쓰려면
+
+Claude Code는 Codex의 `$oracle-consult` 문법을 그대로 쓰지 않는다. Claude Code에서는 skill이 slash command처럼 노출된다.
+
+사용자 전체에 설치:
+
+```powershell
+cd C:\project\oracle-consult-skill
+.\scripts\install-claude-user.ps1
+```
+
+설치 위치:
+
+```text
+$HOME\.claude\skills\oracle-consult
+```
+
+특정 repo에서만 쓰고 싶으면:
+
+```powershell
+.\scripts\install-claude-repo.ps1 -RepoPath C:\path\to\repo
+```
+
+설치 위치:
+
+```text
+<repo>\.claude\skills\oracle-consult
+```
+
+Claude Code 안에서는 이렇게 호출한다.
+
+```text
+/oracle-consult review this implementation plan for counterarguments and missing tests.
+```
+
+한국어로는:
+
+```text
+/oracle-consult 이 패치 계획 반론이랑 빠진 테스트를 봐줘. 아직 파일 수정은 하지 마.
+```
+
+Claude Code용 스킬 파일에는 아래 설정이 들어 있다.
+
+```yaml
+disable-model-invocation: true
+```
+
+즉 Claude Code가 이 스킬을 자동으로 모델 호출용으로 쓰지 않게 막고, 사용자가 `/oracle-consult`로 명시했을 때만 쓰는 구조다.
+
+설치 후 slash command가 바로 안 보이면 Claude Code를 재시작하거나 새 세션에서 확인한다.
+
+Claude Code용 검증:
+
+```powershell
+.\scripts\validate-claude-skill.ps1
+.\scripts\smoke-claude-oracle.ps1
+```
+
 ## 설치 후 Codex에서 어떻게 호출하나
 
 이 스킬은 자동 호출을 꺼두었다.
@@ -203,4 +261,3 @@ Oracle dry-run smoke:
 - 비밀 파일이 필요한 문제
 - 제품 런타임의 모델 호출 대체
 - 검증 증거 대신 Oracle 답변을 인용
-

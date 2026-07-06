@@ -48,11 +48,31 @@ Repo-level install into a workspace:
 .\scripts\install-repo.ps1 -RepoPath C:\path\to\repo
 ```
 
+Claude Code user-level install:
+
+```powershell
+.\scripts\install-claude-user.ps1
+```
+
+Claude Code repo-level install:
+
+```powershell
+.\scripts\install-claude-repo.ps1 -RepoPath C:\path\to\repo
+```
+
+In Claude Code, invoke it as a slash command:
+
+```text
+/oracle-consult review this patch plan for missing risks
+```
+
 ## Validate
 
 ```powershell
 .\scripts\validate-skill.ps1
 .\scripts\smoke-oracle.ps1
+.\scripts\validate-claude-skill.ps1
+.\scripts\smoke-claude-oracle.ps1
 ```
 
 `smoke-oracle.ps1` uses `--dry-run`; it does not call a model.
