@@ -13,7 +13,10 @@
     [switch]$Force,
     [switch]$OpenOracle,
     [switch]$NoOpenOracle,
-    [switch]$NoPrompt
+    [switch]$NoPrompt,
+
+    [ValidateSet("default", "hidden", "attach", "visible", "render")]
+    [string]$OracleBrowserMode = "default"
 )
 
 $ErrorActionPreference = "Stop"
@@ -214,6 +217,16 @@ function Invoke-InstallScript([string]$ScriptName, [string]$KoName, [string]$EnN
         $scriptParams.RepoPath = $script:TargetRepoPath
     }
     & $scriptPath @scriptParams
+
+    if ($ScriptName -like "*codex-plugin*") {
+        Set-OracleBrowserModeForKind "codex-plugin"
+    } elseif ($ScriptName -like "*claude-plugin*") {
+        Set-OracleBrowserModeForKind "claude-plugin"
+    } elseif ($ScriptName -like "*claude*") {
+        Set-OracleBrowserModeForKind "claude-skill"
+    } else {
+        Set-OracleBrowserModeForKind "codex-skill"
+    }
 }
 
 function Install-ScriptName([string]$Kind) {
@@ -234,6 +247,43 @@ function Install-ScriptName([string]$Kind) {
         return $repoScripts[$Kind]
     }
     return $userScripts[$Kind]
+}
+
+function Set-OracleBrowserModeForSkill([string]$SkillRoot) {
+    if ($OracleBrowserMode -eq "default") {
+        return
+    }
+
+    $configPath = Join-Path $SkillRoot "oracle-consult.config.json"
+    if (-not (Test-Path $configPath)) {
+        throw "Missing Oracle Consult config: $configPath"
+    }
+
+    $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+    $config.browserMode = $OracleBrowserMode
+    $config | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $configPath -Encoding UTF8
+    Say ("Oracle browser mode 설정: {0} ({1})" -f $OracleBrowserMode, $configPath) ("Oracle browser mode configured: {0} ({1})" -f $OracleBrowserMode, $configPath)
+}
+
+function Set-OracleBrowserModeForKind([string]$Kind) {
+    if ($OracleBrowserMode -eq "default") {
+        return
+    }
+
+    if ($script:InstallScope -eq "repo") {
+        $agentsBase = Join-Path $script:TargetRepoPath ".agents"
+        $claudeBase = Join-Path $script:TargetRepoPath ".claude"
+    } else {
+        $agentsBase = Join-Path $HOME ".agents"
+        $claudeBase = Join-Path $HOME ".claude"
+    }
+
+    switch ($Kind) {
+        "codex-skill" { Set-OracleBrowserModeForSkill (Join-Path $agentsBase "skills\oracle-consult-skill") }
+        "codex-plugin" { Set-OracleBrowserModeForSkill (Join-Path $agentsBase "plugins\plugins\oracle-consult\skills\oracle-consult") }
+        "claude-skill" { Set-OracleBrowserModeForSkill (Join-Path $claudeBase "skills\oracle-consult-skill") }
+        "claude-plugin" { Set-OracleBrowserModeForSkill (Join-Path $claudeBase "skills\oracle-consult-plugin\skills\oracle-consult") }
+    }
 }
 
 function Invoke-OracleLogin {

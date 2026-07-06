@@ -25,6 +25,20 @@ curl -fsSL https://raw.githubusercontent.com/medraud94private/oracle-consult-ski
   | bash -s -- --language ja --preset all --scope repo --force --no-prompt --no-open-oracle
 ```
 
+Oracle browser behavior is configurable at install time:
+
+- `hidden` (default config): launch Oracle browser mode with `--browser-hide-window`.
+- `attach`: attach to an already-running DevTools-enabled Chrome using `--browser-attach-running`; this avoids launching a separate Oracle Chrome window.
+- `visible`: launch browser mode visibly for debugging.
+- `render`: avoid browser automation and use `--render --copy`.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.sh \
+  | bash -s -- --preset all --scope repo --force --no-prompt --no-open-oracle --oracle-browser-mode attach
+```
+
+The installed value lives in `oracle-consult.config.json` next to each installed `SKILL.md`, so you can edit it later without reinstalling.
+
 Windows without PowerShell:
 
 ```bat
@@ -38,6 +52,12 @@ To force Japanese text in `cmd.exe`, pass the full target path explicitly:
 
 ```bat
 install-latest.cmd --language ja --preset all --scope repo --repo-path C:\path\to\your-project --force --no-prompt --no-open-oracle
+```
+
+To install with attach mode from `cmd.exe`:
+
+```bat
+install-latest.cmd --preset all --scope repo --repo-path C:\path\to\your-project --force --no-prompt --no-open-oracle --oracle-browser-mode attach
 ```
 
 <details>
@@ -91,6 +111,7 @@ You also need Chrome installed and a ChatGPT account you can sign into when Orac
 
 The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted. The no-git latest installer skips the wizard by default and uses the directory you ran it from as the target repo.
 Supported installer languages are Korean, English, and Japanese.
+Normal consults are fresh-by-default. The skill may inspect a previous Oracle session once for recovery, but if that recovery fails it should stop trying to continue the old session and start a fresh consult with the same prompt.
 
 Install modes are intentionally name-separated: standalone skills install as `oracle-consult-skill`, while plugins keep the `oracle-consult` namespace. If you are upgrading from an older standalone install, use `-Force` / `--force`; the installer removes the old standalone `oracle-consult` skill folder when it matches this package's safety marker.
 

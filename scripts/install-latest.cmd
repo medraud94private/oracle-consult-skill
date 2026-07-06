@@ -55,7 +55,17 @@ if "%~1"=="" (
   echo Installing into default repo path: %CALLER_PWD%
   call "%SOURCE_DIR%\install.cmd" --language auto --preset all --scope repo --repo-path "%CALLER_PWD%" --force --no-prompt --no-open-oracle
 ) else (
-  call "%SOURCE_DIR%\install.cmd" %*
+  call :scan_args %*
+  if "%SCOPE_USER%"=="1" (
+    call "%SOURCE_DIR%\install.cmd" %*
+  ) else if "%PRESET_ORACLE_LOGIN%"=="1" (
+    call "%SOURCE_DIR%\install.cmd" %*
+  ) else if "%HAS_REPO_PATH%"=="1" (
+    call "%SOURCE_DIR%\install.cmd" %*
+  ) else (
+    echo Installing into default repo path: %CALLER_PWD%
+    call "%SOURCE_DIR%\install.cmd" %* --repo-path "%CALLER_PWD%"
+  )
 )
 set "STATUS=%ERRORLEVEL%"
 rmdir /s /q "%TMP_ROOT%" >nul 2>nul
@@ -79,5 +89,19 @@ echo   --language auto --preset all --scope repo --repo-path "%%CD%%" --force --
 echo.
 echo Installer language values: auto, ko, en, ja.
 echo.
+echo Oracle browser mode values: default, hidden, attach, visible, render.
+echo.
 echo Pass normal install.cmd arguments to override.
 exit /b 0
+
+:scan_args
+set "HAS_REPO_PATH=0"
+set "SCOPE_USER=0"
+set "PRESET_ORACLE_LOGIN=0"
+:scan_loop
+if "%~1"=="" exit /b 0
+if /I "%~1"=="--repo-path" set "HAS_REPO_PATH=1"
+if /I "%~1"=="--scope" if /I "%~2"=="user" set "SCOPE_USER=1"
+if /I "%~1"=="--preset" if /I "%~2"=="oracle-login" set "PRESET_ORACLE_LOGIN=1"
+shift
+goto :scan_loop

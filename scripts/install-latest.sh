@@ -17,10 +17,11 @@ Default behavior with no arguments:
   --language auto --preset all --scope repo --repo-path "$PWD" --force --no-prompt --no-open-oracle
 
 Installer language values: auto, ko, en, ja.
+Oracle browser mode values: default, hidden, attach, visible, render.
 
 Pass normal install.sh arguments after `bash -s --` to override:
   curl -fsSL https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.sh \
-    | bash -s -- --language ja --preset plugins --scope repo --force --no-prompt --no-open-oracle
+    | bash -s -- --language ja --preset plugins --scope repo --force --no-prompt --no-open-oracle --oracle-browser-mode attach
 EOF
 }
 

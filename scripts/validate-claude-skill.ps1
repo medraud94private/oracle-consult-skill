@@ -16,6 +16,7 @@ function Add-WarningMessage([string]$Message) {
 
 $skillPath = Resolve-Path $SkillRoot
 $skillFile = Join-Path $skillPath "SKILL.md"
+$configFile = Join-Path $skillPath "oracle-consult.config.json"
 
 if (-not (Test-Path $skillFile)) {
     Add-ErrorMessage "Missing SKILL.md"
@@ -35,6 +36,22 @@ if (-not (Test-Path $skillFile)) {
     }
     if ($skillText -notmatch "--dry-run summary --files-report") {
         Add-ErrorMessage "SKILL.md must require dry-run file reporting before real consults."
+    }
+}
+
+if (-not (Test-Path $configFile)) {
+    Add-ErrorMessage "Missing oracle-consult.config.json"
+} else {
+    try {
+        $config = Get-Content -LiteralPath $configFile -Raw | ConvertFrom-Json
+        if (@("hidden", "attach", "visible", "render") -notcontains $config.browserMode) {
+            Add-ErrorMessage "oracle-consult.config.json browserMode must be hidden, attach, visible, or render."
+        }
+        if ($config.sessionPolicy -ne "fresh-by-default") {
+            Add-ErrorMessage "oracle-consult.config.json sessionPolicy must be fresh-by-default."
+        }
+    } catch {
+        Add-ErrorMessage "oracle-consult.config.json must be valid JSON."
     }
 }
 

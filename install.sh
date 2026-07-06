@@ -9,6 +9,7 @@ FORCE=0
 OPEN_ORACLE=0
 NO_OPEN_ORACLE=0
 NO_PROMPT=0
+ORACLE_BROWSER_MODE="default"
 
 usage() {
   cat <<'EOF'
@@ -26,6 +27,7 @@ Options:
   --force                      Overwrite existing install targets
   --open-oracle                Open Oracle browser login setup after install
   --no-open-oracle             Do not ask to open Oracle browser login setup
+  --oracle-browser-mode MODE   default|hidden|attach|visible|render. Overrides installed config
   --no-prompt                  Non-interactive mode. Defaults to --preset all --scope repo
   -h, --help                   Show this help
 
@@ -56,6 +58,8 @@ while [[ $# -gt 0 ]]; do
       NO_OPEN_ORACLE=1; shift ;;
     --no-prompt)
       NO_PROMPT=1; shift ;;
+    --oracle-browser-mode)
+      ORACLE_BROWSER_MODE="${2:-}"; shift 2 ;;
     -h|--help)
       usage; exit 0 ;;
     *)
@@ -68,6 +72,7 @@ done
 case "$LANGUAGE" in auto|ko|en|ja) ;; *) echo "Invalid --language: $LANGUAGE" >&2; exit 1 ;; esac
 case "$PRESET" in interactive|all|codex|claude|skills|plugins|codex-skill|codex-plugin|claude-skill|claude-plugin|oracle-login) ;; *) echo "Invalid --preset: $PRESET" >&2; exit 1 ;; esac
 case "$SCOPE" in interactive|repo|user) ;; *) echo "Invalid --scope: $SCOPE" >&2; exit 1 ;; esac
+case "$ORACLE_BROWSER_MODE" in default|hidden|attach|visible|render) ;; *) echo "Invalid --oracle-browser-mode: $ORACLE_BROWSER_MODE" >&2; exit 1 ;; esac
 if [[ "$OPEN_ORACLE" -eq 1 && "$NO_OPEN_ORACLE" -eq 1 ]]; then
   echo "Use either --open-oracle or --no-open-oracle, not both." >&2
   exit 1
@@ -366,6 +371,21 @@ validate_basic_file() {
   fi
 }
 
+apply_oracle_browser_mode() {
+  local skill_root="$1"
+  local config_file="$skill_root/oracle-consult.config.json"
+  local tmp_file
+
+  if [[ "$ORACLE_BROWSER_MODE" == "default" ]]; then
+    return
+  fi
+  validate_basic_file "$config_file"
+  tmp_file="$(mktemp "${TMPDIR:-/tmp}/oracle-consult-config.XXXXXX")"
+  sed -E 's/"browserMode": "[^"]+"/"browserMode": "'"$ORACLE_BROWSER_MODE"'"/' "$config_file" > "$tmp_file"
+  mv "$tmp_file" "$config_file"
+  say "Oracle browser mode 설정: $ORACLE_BROWSER_MODE ($config_file)" "Oracle browser mode configured: $ORACLE_BROWSER_MODE ($config_file)"
+}
+
 install_codex_skill() {
   local base target source
   source="$SCRIPT_DIR/skills/oracle-consult-skill"
@@ -378,6 +398,7 @@ install_codex_skill() {
   cleanup_legacy_standalone_skill "$base"
   copy_dir "$source" "$target" "$base"
   validate_basic_file "$target/SKILL.md"
+  apply_oracle_browser_mode "$target"
   say "Codex skill 설치 완료: $target" "Installed Codex skill: $target"
 }
 
@@ -399,6 +420,7 @@ install_codex_plugin() {
   write_codex_marketplace "$marketplace" "$name" "$display"
   validate_basic_file "$target/.codex-plugin/plugin.json"
   validate_basic_file "$marketplace"
+  apply_oracle_browser_mode "$target/skills/oracle-consult"
   say "Codex plugin 등록 완료: $target" "Registered Codex plugin: $target"
 }
 
@@ -414,6 +436,7 @@ install_claude_skill() {
   cleanup_legacy_standalone_skill "$base"
   copy_dir "$source" "$target" "$base"
   validate_basic_file "$target/SKILL.md"
+  apply_oracle_browser_mode "$target"
   say "Claude Code skill 설치 완료: $target" "Installed Claude Code skill: $target"
 }
 
@@ -429,6 +452,7 @@ install_claude_plugin() {
   copy_dir "$source" "$target" "$base"
   validate_basic_file "$target/.claude-plugin/plugin.json"
   validate_basic_file "$target/skills/oracle-consult/SKILL.md"
+  apply_oracle_browser_mode "$target/skills/oracle-consult"
   say "Claude Code plugin 설치 완료: $target" "Installed Claude Code plugin: $target"
 }
 

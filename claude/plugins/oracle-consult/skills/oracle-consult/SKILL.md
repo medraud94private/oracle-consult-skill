@@ -40,6 +40,17 @@ Skip Oracle for routine edits, simple lookups, tasks where local files/tests alr
 
 Prerequisites: Node 24+, Chrome or Chromium for browser mode, a signed-in ChatGPT account for browser mode, and explicit user approval for API mode or any paid provider route.
 
+## Local Configuration
+
+Read `oracle-consult.config.json` next to this `SKILL.md` before building Oracle commands. Defaults:
+
+- `browserMode: "hidden"`: launch Oracle browser mode with `--browser-hide-window`.
+- `browserMode: "attach"`: use `--browser-attach-running` to attach to an already-running Chrome with DevTools access; do not combine it with `--browser-hide-window`, `--browser-manual-login`, or `--browser-keep-browser`.
+- `browserMode: "visible"`: launch browser mode without hiding; use for debugging.
+- `browserMode: "render"`: use `--render --copy` and ask the user to paste into ChatGPT manually.
+
+Treat `sessionPolicy: "fresh-by-default"` literally. Start each consult as a fresh Oracle run unless the user explicitly asks to follow up on a prior Oracle session. Do not use `oracle --followup`, `oracle restart`, `oracle session --live`, or `oracle session --harvest` as the default path.
+
 ## Prompt Shape
 
 Write a standalone consult prompt with:
@@ -74,13 +85,25 @@ npx -y @steipete/oracle --engine browser --browser-manual-login \
   --file "$HOME/.claude/skills/oracle-consult-plugin/skills/oracle-consult/SKILL.md"
 ```
 
-Retry the real consult only after that profile is signed in. The login step must be visible because the user signs in manually. For normal consults after login, prefer `--browser-hide-window` so Oracle can launch Chrome and hide it after startup. If the user already has a ChatGPT tab open and wants Oracle to reuse it, try `--browser-attach-running --browser-tab current` instead, but treat attach failures as setup blockers rather than rerunning the same prompt repeatedly.
+Retry the real consult only after that profile is signed in. The login step must be visible because the user signs in manually. For normal consults after login, use the browser mode from `oracle-consult.config.json`. The default `hidden` mode adds `--browser-hide-window`; if the user dislikes any launched window, switch config to `attach` and use `--browser-attach-running` with a DevTools-enabled Chrome. Treat attach failures as setup blockers rather than rerunning the same prompt repeatedly.
 
-Preferred deep consult path:
+Preferred deep consult path when config `browserMode` is `hidden`:
 
 ```bash
 npx -y @steipete/oracle --engine browser --model gpt-5.5-pro \
   --browser-hide-window \
+  --browser-archive never \
+  --slug "<short-topic>" \
+  -p "<standalone consult prompt>" \
+  --file "path/to/key/file.py"
+```
+
+Preferred path when config `browserMode` is `attach`:
+
+```bash
+npx -y @steipete/oracle --engine browser --model gpt-5.5-pro \
+  --browser-attach-running \
+  --browser-archive never \
   --slug "<short-topic>" \
   -p "<standalone consult prompt>" \
   --file "path/to/key/file.py"
@@ -94,7 +117,7 @@ npx -y @steipete/oracle --render --copy \
   --file "path/to/key/file.py"
 ```
 
-Session recovery:
+Session recovery is a one-attempt retrieval path, not the default consult path. If recovery errors, stop recovery and start a fresh consult with the same standalone prompt:
 
 ```bash
 npx -y @steipete/oracle status --hours 72

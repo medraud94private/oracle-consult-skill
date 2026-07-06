@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "oracleCommand": "npx -y @steipete/oracle",
+  "browserMode": "hidden",
+  "sessionPolicy": "fresh-by-default",
+  "normalRunArgsByBrowserMode": {
+    "hidden": ["--engine", "browser", "--browser-hide-window", "--browser-archive", "never"],
+    "attach": ["--engine", "browser", "--browser-attach-running", "--browser-archive", "never"],
+    "visible": ["--engine", "browser", "--browser-archive", "never"],
+    "render": ["--render", "--copy"]
+  },
+  "sessionRecovery": {
+    "allowFollowupByDefault": false,
+    "maxSessionReadAttempts": 1,
+    "onSessionReadFailure": "start-new-consult"
+  }
+}

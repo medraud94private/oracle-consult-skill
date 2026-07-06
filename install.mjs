@@ -18,6 +18,7 @@ const options = {
   openOracle: false,
   noOpenOracle: false,
   noPrompt: false,
+  oracleBrowserMode: "default",
 };
 
 const presets = new Set([
@@ -50,6 +51,7 @@ Options:
   --force                      Overwrite existing install targets
   --open-oracle                Open Oracle browser login setup after install
   --no-open-oracle             Do not ask to open Oracle browser login setup
+  --oracle-browser-mode MODE   default|hidden|attach|visible|render. Overrides installed config
   --no-prompt                  Non-interactive mode. Defaults to --preset all --scope repo
   -h, --help                   Show this help
 
@@ -90,6 +92,9 @@ function parseArgs(argv) {
       case "--no-prompt":
         options.noPrompt = true;
         break;
+      case "--oracle-browser-mode":
+        options.oracleBrowserMode = argv[++i] ?? "";
+        break;
       case "--help":
       case "-h":
         usage();
@@ -110,6 +115,9 @@ function parseArgs(argv) {
   }
   if (options.openOracle && options.noOpenOracle) {
     throw new Error("Use either --open-oracle or --no-open-oracle, not both.");
+  }
+  if (!["default", "hidden", "attach", "visible", "render"].includes(options.oracleBrowserMode)) {
+    throw new Error(`Invalid --oracle-browser-mode: ${options.oracleBrowserMode}`);
   }
 }
 
@@ -318,6 +326,19 @@ function validateFile(file) {
   }
 }
 
+function applyOracleBrowserMode(skillRoot) {
+  if (options.oracleBrowserMode === "default") return;
+  const configPath = path.join(skillRoot, "oracle-consult.config.json");
+  validateFile(configPath);
+  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  config.browserMode = options.oracleBrowserMode;
+  fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+  say(
+    `Oracle browser mode 설정: ${options.oracleBrowserMode} (${configPath})`,
+    `Oracle browser mode configured: ${options.oracleBrowserMode} (${configPath})`,
+  );
+}
+
 function writeCodexMarketplace(marketplacePath, name, displayName) {
   const data = {
     name,
@@ -341,6 +362,7 @@ function installCodexSkill(scope, targetRepoPath) {
   cleanupLegacyStandaloneSkill(base);
   copyDir(path.join(repoRoot, "skills", "oracle-consult-skill"), target, base);
   validateFile(path.join(target, "SKILL.md"));
+  applyOracleBrowserMode(target);
   say(`Codex skill 설치 완료: ${target}`, `Installed Codex skill: ${target}`);
 }
 
@@ -354,6 +376,7 @@ function installCodexPlugin(scope, targetRepoPath) {
     scope === "repo" ? "Repository Local" : "Personal",
   );
   validateFile(path.join(target, ".codex-plugin", "plugin.json"));
+  applyOracleBrowserMode(path.join(target, "skills", "oracle-consult"));
   say(`Codex plugin 등록 완료: ${target}`, `Registered Codex plugin: ${target}`);
 }
 
@@ -363,6 +386,7 @@ function installClaudeSkill(scope, targetRepoPath) {
   cleanupLegacyStandaloneSkill(base);
   copyDir(path.join(repoRoot, "claude", "skills", "oracle-consult-skill"), target, base);
   validateFile(path.join(target, "SKILL.md"));
+  applyOracleBrowserMode(target);
   say(`Claude Code skill 설치 완료: ${target}`, `Installed Claude Code skill: ${target}`);
 }
 
@@ -372,6 +396,7 @@ function installClaudePlugin(scope, targetRepoPath) {
   copyDir(path.join(repoRoot, "claude", "plugins", "oracle-consult"), target, base);
   validateFile(path.join(target, ".claude-plugin", "plugin.json"));
   validateFile(path.join(target, "skills", "oracle-consult", "SKILL.md"));
+  applyOracleBrowserMode(path.join(target, "skills", "oracle-consult"));
   say(`Claude Code plugin 설치 완료: ${target}`, `Installed Claude Code plugin: ${target}`);
 }
 
