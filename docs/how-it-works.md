@@ -36,6 +36,18 @@ The easiest path is the root installer wizard:
 .\install.ps1
 ```
 
+On Windows without PowerShell:
+
+```bat
+install.cmd
+```
+
+Or:
+
+```bat
+node install.mjs
+```
+
 On macOS/Linux:
 
 ```bash

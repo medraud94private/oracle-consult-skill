@@ -18,6 +18,20 @@ cd oracle-consult-skill
 .\install.ps1
 ```
 
+Windows without PowerShell:
+
+```bat
+git clone https://github.com/medraud94private/oracle-consult-skill.git
+cd oracle-consult-skill
+install.cmd
+```
+
+Or call Node directly:
+
+```bat
+node install.mjs
+```
+
 On macOS/Linux, use the shell installer instead:
 
 ```bash
@@ -48,6 +62,12 @@ Non-interactive repository-level install on Windows:
 .\install.ps1 -Language ko -Preset all -Scope repo -RepoPath C:\path\to\target-repo -Force -NoPrompt
 ```
 
+Without PowerShell:
+
+```bat
+install.cmd --language ko --preset all --scope repo --repo-path C:\path\to\target-repo --force --no-prompt
+```
+
 Non-interactive repository-level install on macOS/Linux:
 
 ```bash
@@ -58,6 +78,12 @@ Global user-level install, available across projects:
 
 ```powershell
 .\install.ps1 -Language ko -Preset all -Scope user -Force -NoPrompt
+```
+
+Without PowerShell:
+
+```bat
+install.cmd --language ko --preset all --scope user --force --no-prompt
 ```
 
 On macOS/Linux:
@@ -82,6 +108,12 @@ Open only Oracle's browser login setup:
 
 ```powershell
 .\scripts\open-oracle-login.ps1 -Language ko
+```
+
+Without PowerShell:
+
+```bat
+scripts\open-oracle-login.cmd --language ko
 ```
 
 On macOS/Linux:
@@ -213,6 +245,13 @@ On macOS/Linux:
 ```bash
 ./install.sh --language en --preset all --scope repo --repo-path /path/to/test-repo --force --no-prompt --no-open-oracle
 ./scripts/open-oracle-login.sh --language en --dry-run --yes
+```
+
+Windows without PowerShell:
+
+```bat
+install.cmd --language en --preset all --scope repo --repo-path C:\path\to\test-repo --force --no-prompt --no-open-oracle
+scripts\open-oracle-login.cmd --language en --dry-run --yes
 ```
 
 `smoke-oracle.ps1` uses `--dry-run`; it does not call a model.
