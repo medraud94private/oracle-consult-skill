@@ -1,16 +1,16 @@
 # How It Works
 
-`oracle-consult` is a Codex skill, not a model provider.
+`oracle-consult` is a workflow package, not a model provider.
 
-The skill does not contain GPT-5.5 Pro access by itself. It teaches Codex when and how to call `steipete/oracle`, which then bundles a prompt plus selected files and sends them through one of Oracle's engines.
+The package does not contain GPT-5.5 Pro access by itself. It teaches Codex or Claude Code when and how to call `steipete/oracle`, which then bundles a prompt plus selected files and sends them through one of Oracle's engines.
 
 ## Layers
 
-1. **Codex skill**: `skills/oracle-consult/SKILL.md`
-   - Decides when a second opinion is appropriate.
-   - Requires dry-run file reporting.
-   - Blocks implicit invocation via `agents/openai.yaml`.
-   - Tells Codex to treat Oracle output as advisory.
+1. **Agent-facing wrapper**
+   - Codex skill: `skills/oracle-consult/SKILL.md`
+   - Claude Code skill: `claude/skills/oracle-consult/SKILL.md`
+   - Codex plugin: `plugins/oracle-consult/`
+   - Claude Code plugin: `claude/plugins/oracle-consult/`
 
 2. **Oracle CLI**: `npx -y @steipete/oracle ...`
    - Expands file globs.
@@ -22,15 +22,35 @@ The skill does not contain GPT-5.5 Pro access by itself. It teaches Codex when a
    - Usually ChatGPT browser mode with GPT-5.5 Pro.
    - API mode is possible but should require explicit cost approval.
 
-4. **Codex verification**
+4. **Local agent verification**
    - Re-read local files.
    - Apply only the advice that survives local judgment.
    - Run local tests or documented checks.
    - Never cite Oracle alone as proof of correctness.
 
+## Supported Install Shapes
+
+| Shape | Source path | Install command | Invocation |
+| --- | --- | --- | --- |
+| Codex skill | `skills/oracle-consult/` | `.\scripts\install-user.ps1` | `$oracle-consult` |
+| Claude Code skill | `claude/skills/oracle-consult/` | `.\scripts\install-claude-user.ps1` | `/oracle-consult` |
+| Codex plugin | `plugins/oracle-consult/` | `.\scripts\install-codex-plugin-user.ps1`, then install from `/plugins` | `$oracle-consult` after plugin install |
+| Claude Code plugin | `claude/plugins/oracle-consult/` | `.\scripts\install-claude-plugin-user.ps1` or marketplace install | `/oracle-consult:oracle-consult` |
+
+The wrapper shape changes discovery and invocation. It does not change the actual consult backend: real GPT-5.5 Pro consults still go through `@steipete/oracle`.
+
+## Wrapper Responsibilities
+
+Each wrapper:
+
+- Decides when a second opinion is appropriate.
+- Requires dry-run file reporting.
+- Disables implicit invocation where the host supports it.
+- Tells the host agent to treat Oracle output as advisory.
+
 ## Dependency
 
-The main workflow requires Oracle. If Oracle is unavailable, the skill can still help Codex draft a consult prompt or choose a safe file set, but it cannot get the external model's answer.
+The main workflow requires Oracle. If Oracle is unavailable, the wrappers can still help draft a consult prompt or choose a safe file set, but they cannot get the external model's answer.
 
 This is a hard enough dependency that `oracle-consult-skill` is the clearest name today.
 
@@ -42,15 +62,17 @@ If this grows into a provider-neutral framework, rename or supersede it with som
 
 In that future shape, Oracle would become one backend among several.
 
-## Codex Invocation
+## Invocation
 
 Use explicit invocation:
 
 ```text
 Use $oracle-consult to review this patch plan for missing risks.
+/oracle-consult review this patch plan for missing risks.
+/oracle-consult:oracle-consult review this patch plan for missing risks.
 ```
 
-Avoid vague requests such as "think harder" when you mean Oracle, because this skill intentionally disables implicit invocation to prevent accidental external file sharing.
+Avoid vague requests such as "think harder" when you mean Oracle. These wrappers intentionally avoid implicit external file sharing.
 
 ## Typical Command Flow
 
@@ -81,4 +103,3 @@ npx -y @steipete/oracle --render --copy `
   --file "src/key-file.ts" `
   --file "docs/plan.md"
 ```
-
