@@ -10,7 +10,25 @@ Korean guide: [docs/guide-ko.md](docs/guide-ko.md)
 
 Repository-level install is recommended so Oracle Consult is available only in the projects where you intentionally enable it.
 
-Clone the public repository, then run the installer wizard:
+Fastest install/update without keeping a git checkout:
+
+```bash
+cd /path/to/your-project
+curl -fsSL https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.sh | bash
+```
+
+With no arguments, this installs everything repo-scoped into the current project and does not open the Oracle login browser.
+
+Windows without PowerShell:
+
+```bat
+cd C:\path\to\your-project
+curl -fsSLO https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.cmd
+install-latest.cmd
+del install-latest.cmd
+```
+
+If you prefer to keep a local copy of this installer repo, clone the public repository, then run the installer wizard:
 
 ```powershell
 git clone https://github.com/medraud94private/oracle-consult-skill.git
@@ -54,7 +72,7 @@ If you downloaded a zip instead of cloning with git, make the scripts executable
 chmod +x install.sh scripts/open-oracle-login.sh
 ```
 
-The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted.
+The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted. The no-git latest installer skips the wizard by default and uses the directory you ran it from as the target repo.
 
 Install modes are intentionally name-separated: standalone skills install as `oracle-consult-skill`, while plugins keep the `oracle-consult` namespace. If you are upgrading from an older standalone install, use `-Force` / `--force`; the installer removes the old standalone `oracle-consult` skill folder when it matches this package's safety marker.
 
