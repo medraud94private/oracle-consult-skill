@@ -8,6 +8,8 @@ Korean guide: [docs/guide-ko.md](docs/guide-ko.md)
 
 ## Quick Start
 
+Repository-level install is recommended so Oracle Consult is available only in the projects where you intentionally enable it.
+
 Clone the public repository, then run the installer wizard:
 
 ```powershell
@@ -16,18 +18,24 @@ cd oracle-consult-skill
 .\install.ps1
 ```
 
-The wizard lets you choose a language, install target, and whether to open Oracle's browser login setup.
+The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted.
 
-Non-interactive recommended install:
+Non-interactive repository-level install:
 
 ```powershell
-.\install.ps1 -Language ko -Preset all -Force -NoPrompt
+.\install.ps1 -Language ko -Preset all -Scope repo -RepoPath C:\path\to\target-repo -Force -NoPrompt
 ```
 
-Install everything and immediately open Oracle's ChatGPT login setup:
+Global user-level install, available across projects:
 
 ```powershell
-.\install.ps1 -Language ko -Preset all -Force -NoPrompt -OpenOracle
+.\install.ps1 -Language ko -Preset all -Scope user -Force -NoPrompt
+```
+
+Install into a repository and immediately open Oracle's ChatGPT login setup:
+
+```powershell
+.\install.ps1 -Language ko -Preset all -Scope repo -RepoPath C:\path\to\target-repo -Force -NoPrompt -OpenOracle
 ```
 
 Open only Oracle's browser login setup:
@@ -62,7 +70,13 @@ The skill is configured with `allow_implicit_invocation: false`, so Codex should
 
 ## Install
 
-User-level install, current Codex skill location:
+Codex skill, repository-level install:
+
+```powershell
+.\scripts\install-repo.ps1 -RepoPath C:\path\to\repo
+```
+
+Codex skill, user-level install:
 
 ```powershell
 .\scripts\install-user.ps1
@@ -74,39 +88,50 @@ Compatibility install for Codex setups that still read `$HOME\.codex\skills`:
 .\scripts\install-user.ps1 -LegacyCodexPath
 ```
 
-Repo-level install into a workspace:
+Codex plugin, repository-level install/search flow:
 
 ```powershell
-.\scripts\install-repo.ps1 -RepoPath C:\path\to\repo
+.\scripts\install-codex-plugin-repo.ps1 -RepoPath C:\path\to\repo
 ```
 
-Claude Code user-level install:
+Open Codex from that repo, open `/plugins`, search for **Oracle Consult**, and choose **Install plugin**.
+
+Codex plugin, user-level install/search flow:
 
 ```powershell
-.\scripts\install-claude-user.ps1
+.\scripts\install-codex-plugin-user.ps1
 ```
 
-Claude Code repo-level install:
+Then start a new Codex thread, open `/plugins`, search for **Oracle Consult**, and choose **Install plugin**. This uses the personal marketplace at `$HOME\.agents\plugins\marketplace.json`.
+
+Claude Code skill, repository-level install:
 
 ```powershell
 .\scripts\install-claude-repo.ps1 -RepoPath C:\path\to\repo
 ```
 
-In Claude Code, invoke it as a slash command:
+Claude Code skill, user-level install:
 
-```text
-/oracle-consult review this patch plan for missing risks
+```powershell
+.\scripts\install-claude-user.ps1
 ```
 
-Claude Code plugin install:
+Claude Code plugin, repository-level install:
+
+```powershell
+.\scripts\install-claude-plugin-repo.ps1 -RepoPath C:\path\to\repo
+```
+
+Claude Code plugin, user-level install:
 
 ```powershell
 .\scripts\install-claude-plugin-user.ps1
 ```
 
-In Claude Code, invoke the plugin skill with its namespace:
+In Claude Code, invoke the standalone skill or plugin skill:
 
 ```text
+/oracle-consult review this patch plan for missing risks
 /oracle-consult:oracle-consult review this patch plan for missing risks
 ```
 
@@ -123,18 +148,10 @@ For marketplace-style install in Claude Code, add this repo as a marketplace and
 /plugin install oracle-consult@oracle-consult-tools
 ```
 
-Codex plugin directory install/search flow:
-
-```powershell
-.\scripts\install-codex-plugin-user.ps1
-```
-
-Then start a new Codex thread, open `/plugins`, search for **Oracle Consult**, and choose **Install plugin**. This uses the personal marketplace at `$HOME\.agents\plugins\marketplace.json`.
-
 ## Validate
 
 ```powershell
-.\install.ps1 -Language en -Preset all -Force -NoPrompt -NoOpenOracle
+.\install.ps1 -Language en -Preset all -Scope repo -RepoPath C:\path\to\test-repo -Force -NoPrompt -NoOpenOracle
 .\scripts\validate-skill.ps1
 .\scripts\smoke-oracle.ps1
 .\scripts\validate-claude-skill.ps1

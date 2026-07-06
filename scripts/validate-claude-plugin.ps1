@@ -1,6 +1,7 @@
 param(
     [string]$PluginRoot = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "claude\plugins\oracle-consult"),
     [string]$MarketplaceRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")),
+    [switch]$SkipMarketplace,
     [switch]$NoStrict
 )
 
@@ -11,7 +12,6 @@ if (-not (Get-Command claude -ErrorAction SilentlyContinue)) {
 }
 
 $pluginPath = Resolve-Path $PluginRoot
-$marketplacePath = Resolve-Path $MarketplaceRoot
 
 $strictArgs = @()
 if (-not $NoStrict) {
@@ -19,7 +19,10 @@ if (-not $NoStrict) {
 }
 
 claude plugin validate @strictArgs $pluginPath
-claude plugin validate @strictArgs $marketplacePath
 
 Write-Host "Claude Code plugin validation passed: $pluginPath"
-Write-Host "Claude Code marketplace validation passed: $marketplacePath"
+if (-not $SkipMarketplace) {
+    $marketplacePath = Resolve-Path $MarketplaceRoot
+    claude plugin validate @strictArgs $marketplacePath
+    Write-Host "Claude Code marketplace validation passed: $marketplacePath"
+}

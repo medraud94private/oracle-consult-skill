@@ -38,12 +38,14 @@ The easiest path is the root installer wizard:
 
 It asks for language, install target, and optional Oracle browser login setup. The individual install shapes below remain available for automation or advanced use.
 
-| Shape | Source path | Install command | Invocation |
+Repository-level install is recommended. Use `-Scope user` only when you intentionally want Oracle Consult available across all projects.
+
+| Shape | Repo-level command | User-level command | Invocation |
 | --- | --- | --- | --- |
-| Codex skill | `skills/oracle-consult/` | `.\scripts\install-user.ps1` | `$oracle-consult` |
-| Claude Code skill | `claude/skills/oracle-consult/` | `.\scripts\install-claude-user.ps1` | `/oracle-consult` |
-| Codex plugin | `plugins/oracle-consult/` | `.\scripts\install-codex-plugin-user.ps1`, then install from `/plugins` | `$oracle-consult` after plugin install |
-| Claude Code plugin | `claude/plugins/oracle-consult/` | `.\scripts\install-claude-plugin-user.ps1` or marketplace install | `/oracle-consult:oracle-consult` |
+| Codex skill | `.\scripts\install-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-user.ps1` | `$oracle-consult` |
+| Claude Code skill | `.\scripts\install-claude-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-claude-user.ps1` | `/oracle-consult` |
+| Codex plugin | `.\scripts\install-codex-plugin-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-codex-plugin-user.ps1` | `$oracle-consult` after `/plugins` install |
+| Claude Code plugin | `.\scripts\install-claude-plugin-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-claude-plugin-user.ps1` | `/oracle-consult:oracle-consult` |
 
 The wrapper shape changes discovery and invocation. It does not change the actual consult backend: real GPT-5.5 Pro consults still go through `@steipete/oracle`.
 

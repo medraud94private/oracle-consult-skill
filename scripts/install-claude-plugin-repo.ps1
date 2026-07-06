@@ -6,13 +6,13 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$source = Join-Path $repoRoot "skills\oracle-consult"
+$source = Join-Path $repoRoot "claude\plugins\oracle-consult"
 $resolvedRepo = Resolve-Path $RepoPath
-$base = Join-Path $resolvedRepo ".agents\skills"
-$target = Join-Path $base "oracle-consult"
+$base = Join-Path $resolvedRepo ".claude\skills"
+$target = Join-Path $base "oracle-consult-plugin"
 
 if (-not (Test-Path $source)) {
-    throw "Source skill not found: $source"
+    throw "Claude plugin source not found: $source"
 }
 
 if ((Test-Path $target) -and -not $Force) {
@@ -25,7 +25,7 @@ $resolvedBase = [System.IO.Path]::GetFullPath($base)
 $resolvedTarget = [System.IO.Path]::GetFullPath($target)
 $resolvedBaseWithSep = $resolvedBase.TrimEnd("\") + "\"
 if (-not $resolvedTarget.StartsWith($resolvedBaseWithSep, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw "Refusing to write outside repo Codex skills directory: $resolvedTarget"
+    throw "Refusing to write outside repo Claude skills directory: $resolvedTarget"
 }
 
 if (Test-Path $target) {
@@ -33,6 +33,6 @@ if (Test-Path $target) {
 }
 Copy-Item -LiteralPath $source -Destination $target -Recurse
 
-& (Join-Path $PSScriptRoot "validate-skill.ps1") -SkillRoot $target
-Write-Host "Installed oracle-consult skill to $target"
-Write-Host "Test prompt: Use `$oracle-consult to pressure-test this implementation plan."
+& (Join-Path $PSScriptRoot "validate-claude-plugin.ps1") -PluginRoot $target -SkipMarketplace
+Write-Host "Installed repo-scoped Claude Code oracle-consult plugin to $target"
+Write-Host "Open Claude Code from $resolvedRepo, then invoke /oracle-consult:oracle-consult."

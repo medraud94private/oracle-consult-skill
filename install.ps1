@@ -5,6 +5,11 @@ param(
     [ValidateSet("interactive", "all", "codex", "claude", "skills", "plugins", "codex-skill", "codex-plugin", "claude-skill", "claude-plugin", "oracle-login")]
     [string]$Preset = "interactive",
 
+    [ValidateSet("interactive", "repo", "user")]
+    [string]$Scope = "interactive",
+
+    [string]$RepoPath = (Get-Location).Path,
+
     [switch]$Force,
     [switch]$OpenOracle,
     [switch]$NoOpenOracle,
@@ -19,6 +24,8 @@ if ($OpenOracle -and $NoOpenOracle) {
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $script:InstallForce = [bool]$Force
+$script:InstallScope = $null
+$script:TargetRepoPath = $null
 
 function Resolve-Language {
     if ($Language -ne "auto") {
@@ -100,6 +107,49 @@ function Select-Preset {
     }
 }
 
+function Select-Scope {
+    if ($Scope -ne "interactive") {
+        return $Scope
+    }
+
+    if ($NoPrompt) {
+        return "repo"
+    }
+
+    Write-Host ""
+    Say "설치 범위를 선택하세요. 추천은 리포지터리별 설치입니다." "Choose install scope. Repository-level install is recommended."
+    Say "  [1] 추천: 현재/지정 리포지터리에만 설치" "  [1] Recommended: install only into the current/target repository"
+    Say "  [2] 사용자 전체에 설치" "  [2] Install globally for this user"
+    $choice = Read-Host "1/2 (default: 1)"
+    if ($choice -eq "2") {
+        return "user"
+    }
+    return "repo"
+}
+
+function Resolve-TargetRepoPath {
+    if ($script:InstallScope -ne "repo") {
+        return $null
+    }
+
+    $path = $RepoPath
+    if (-not $NoPrompt) {
+        Write-Host ""
+        Say "설치할 대상 리포지터리 경로를 입력하세요." "Enter the target repository path."
+        Say ("기본값: {0}" -f $RepoPath) ("Default: {0}" -f $RepoPath)
+        Say "이 installer repo가 아니라 실제 작업 repo를 넣는 것을 권장합니다." "Prefer the actual work repository, not necessarily this installer repository."
+        $inputPath = Read-Host "Repo path"
+        if (-not [string]::IsNullOrWhiteSpace($inputPath)) {
+            $path = $inputPath
+        }
+    }
+
+    if (-not (Test-Path $path)) {
+        throw "Repository path not found: $path"
+    }
+    return (Resolve-Path $path).Path
+}
+
 function Invoke-InstallScript([string]$ScriptName, [string]$KoName, [string]$EnName) {
     $scriptPath = Join-Path $repoRoot ("scripts\{0}" -f $ScriptName)
     if (-not (Test-Path $scriptPath)) {
@@ -113,7 +163,30 @@ function Invoke-InstallScript([string]$ScriptName, [string]$KoName, [string]$EnN
     if ($script:InstallForce) {
         $scriptParams.Force = $true
     }
+    if ($script:InstallScope -eq "repo") {
+        $scriptParams.RepoPath = $script:TargetRepoPath
+    }
     & $scriptPath @scriptParams
+}
+
+function Install-ScriptName([string]$Kind) {
+    $userScripts = @{
+        "codex-skill" = "install-user.ps1"
+        "codex-plugin" = "install-codex-plugin-user.ps1"
+        "claude-skill" = "install-claude-user.ps1"
+        "claude-plugin" = "install-claude-plugin-user.ps1"
+    }
+    $repoScripts = @{
+        "codex-skill" = "install-repo.ps1"
+        "codex-plugin" = "install-codex-plugin-repo.ps1"
+        "claude-skill" = "install-claude-repo.ps1"
+        "claude-plugin" = "install-claude-plugin-repo.ps1"
+    }
+
+    if ($script:InstallScope -eq "repo") {
+        return $repoScripts[$Kind]
+    }
+    return $userScripts[$Kind]
 }
 
 function Invoke-OracleLogin {
@@ -133,42 +206,55 @@ if ($selectedPreset -eq "cancel") {
     exit 0
 }
 
+$script:InstallScope = "user"
+if ($selectedPreset -ne "oracle-login") {
+    $script:InstallScope = Select-Scope
+    $script:TargetRepoPath = Resolve-TargetRepoPath
+}
+
 Say "Oracle Consult 설치를 시작합니다." "Starting Oracle Consult setup."
+if ($selectedPreset -ne "oracle-login") {
+    if ($script:InstallScope -eq "repo") {
+        Say ("설치 범위: 리포지터리별 ({0})" -f $script:TargetRepoPath) ("Install scope: repository-level ({0})" -f $script:TargetRepoPath)
+    } else {
+        Say "설치 범위: 사용자 전체" "Install scope: global user"
+    }
+}
 
 switch ($selectedPreset) {
     "all" {
-        Invoke-InstallScript "install-user.ps1" "Codex skill 설치" "Install Codex skill"
-        Invoke-InstallScript "install-codex-plugin-user.ps1" "Codex plugin 등록" "Register Codex plugin"
-        Invoke-InstallScript "install-claude-user.ps1" "Claude Code skill 설치" "Install Claude Code skill"
-        Invoke-InstallScript "install-claude-plugin-user.ps1" "Claude Code plugin 설치" "Install Claude Code plugin"
+        Invoke-InstallScript (Install-ScriptName "codex-skill") "Codex skill 설치" "Install Codex skill"
+        Invoke-InstallScript (Install-ScriptName "codex-plugin") "Codex plugin 등록" "Register Codex plugin"
+        Invoke-InstallScript (Install-ScriptName "claude-skill") "Claude Code skill 설치" "Install Claude Code skill"
+        Invoke-InstallScript (Install-ScriptName "claude-plugin") "Claude Code plugin 설치" "Install Claude Code plugin"
     }
     "codex" {
-        Invoke-InstallScript "install-user.ps1" "Codex skill 설치" "Install Codex skill"
-        Invoke-InstallScript "install-codex-plugin-user.ps1" "Codex plugin 등록" "Register Codex plugin"
+        Invoke-InstallScript (Install-ScriptName "codex-skill") "Codex skill 설치" "Install Codex skill"
+        Invoke-InstallScript (Install-ScriptName "codex-plugin") "Codex plugin 등록" "Register Codex plugin"
     }
     "claude" {
-        Invoke-InstallScript "install-claude-user.ps1" "Claude Code skill 설치" "Install Claude Code skill"
-        Invoke-InstallScript "install-claude-plugin-user.ps1" "Claude Code plugin 설치" "Install Claude Code plugin"
+        Invoke-InstallScript (Install-ScriptName "claude-skill") "Claude Code skill 설치" "Install Claude Code skill"
+        Invoke-InstallScript (Install-ScriptName "claude-plugin") "Claude Code plugin 설치" "Install Claude Code plugin"
     }
     "skills" {
-        Invoke-InstallScript "install-user.ps1" "Codex skill 설치" "Install Codex skill"
-        Invoke-InstallScript "install-claude-user.ps1" "Claude Code skill 설치" "Install Claude Code skill"
+        Invoke-InstallScript (Install-ScriptName "codex-skill") "Codex skill 설치" "Install Codex skill"
+        Invoke-InstallScript (Install-ScriptName "claude-skill") "Claude Code skill 설치" "Install Claude Code skill"
     }
     "plugins" {
-        Invoke-InstallScript "install-codex-plugin-user.ps1" "Codex plugin 등록" "Register Codex plugin"
-        Invoke-InstallScript "install-claude-plugin-user.ps1" "Claude Code plugin 설치" "Install Claude Code plugin"
+        Invoke-InstallScript (Install-ScriptName "codex-plugin") "Codex plugin 등록" "Register Codex plugin"
+        Invoke-InstallScript (Install-ScriptName "claude-plugin") "Claude Code plugin 설치" "Install Claude Code plugin"
     }
     "codex-skill" {
-        Invoke-InstallScript "install-user.ps1" "Codex skill 설치" "Install Codex skill"
+        Invoke-InstallScript (Install-ScriptName "codex-skill") "Codex skill 설치" "Install Codex skill"
     }
     "codex-plugin" {
-        Invoke-InstallScript "install-codex-plugin-user.ps1" "Codex plugin 등록" "Register Codex plugin"
+        Invoke-InstallScript (Install-ScriptName "codex-plugin") "Codex plugin 등록" "Register Codex plugin"
     }
     "claude-skill" {
-        Invoke-InstallScript "install-claude-user.ps1" "Claude Code skill 설치" "Install Claude Code skill"
+        Invoke-InstallScript (Install-ScriptName "claude-skill") "Claude Code skill 설치" "Install Claude Code skill"
     }
     "claude-plugin" {
-        Invoke-InstallScript "install-claude-plugin-user.ps1" "Claude Code plugin 설치" "Install Claude Code plugin"
+        Invoke-InstallScript (Install-ScriptName "claude-plugin") "Claude Code plugin 설치" "Install Claude Code plugin"
     }
     "oracle-login" {
         if (-not $NoOpenOracle) {
@@ -191,6 +277,13 @@ if ($OpenOracle) {
 
 Write-Host ""
 Say "설치가 끝났습니다." "Setup complete."
-Say "Codex: 새 thread에서 `$oracle-consult 를 명시적으로 호출하세요. Codex plugin은 /plugins에서 Oracle Consult를 설치한 뒤 새 thread를 여세요." "Codex: in a new thread, explicitly invoke `$oracle-consult. For the Codex plugin, install Oracle Consult from /plugins, then open a new thread."
+if ($selectedPreset -eq "oracle-login") {
+    Say "Oracle 브라우저 로그인 준비만 실행했습니다." "Only Oracle browser login setup was run."
+} elseif ($script:InstallScope -eq "repo") {
+    Say "해당 리포지터리 루트에서 Codex/Claude Code를 새로 열어 사용하세요." "Open a new Codex/Claude Code session from that repository root."
+} else {
+    Say "다른 리포지터리에서도 보이지만, 이미 열린 세션은 새로 열거나 재시작해야 할 수 있습니다." "It is available across repositories, but already-open sessions may need a new thread or restart."
+}
+Say "Codex skill: `$oracle-consult 를 명시적으로 호출합니다. Codex plugin은 /plugins에서 Oracle Consult를 설치한 뒤 새 thread를 여세요." "Codex skill: explicitly invoke `$oracle-consult. For the Codex plugin, install Oracle Consult from /plugins, then open a new thread."
 Say "Claude Code skill: /oracle-consult 로 호출합니다." "Claude Code skill: invoke /oracle-consult."
 Say "Claude Code plugin: /oracle-consult:oracle-consult 로 호출합니다." "Claude Code plugin: invoke /oracle-consult:oracle-consult."

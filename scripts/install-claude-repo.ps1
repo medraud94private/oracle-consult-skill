@@ -20,6 +20,14 @@ if ((Test-Path $target) -and -not $Force) {
 }
 
 New-Item -ItemType Directory -Force -Path $base | Out-Null
+
+$resolvedBase = [System.IO.Path]::GetFullPath($base)
+$resolvedTarget = [System.IO.Path]::GetFullPath($target)
+$resolvedBaseWithSep = $resolvedBase.TrimEnd("\") + "\"
+if (-not $resolvedTarget.StartsWith($resolvedBaseWithSep, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Refusing to write outside repo Claude skills directory: $resolvedTarget"
+}
+
 if (Test-Path $target) {
     Remove-Item -LiteralPath $target -Recurse -Force
 }
@@ -28,4 +36,3 @@ Copy-Item -LiteralPath $source -Destination $target -Recurse
 & (Join-Path $PSScriptRoot "validate-claude-skill.ps1") -SkillRoot $target
 Write-Host "Installed Claude Code oracle-consult skill to $target"
 Write-Host "Invoke in Claude Code with: /oracle-consult review this plan for missing risks."
-
