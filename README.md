@@ -131,11 +131,11 @@ Then run consults with explicit prompts and tight file sets.
 If `gh repo create` has sufficient permissions:
 
 ```powershell
-gh repo create oracle-consult-skill --private --source . --remote origin --push `
+gh repo create oracle-consult-skill --public --source . --remote origin --push `
   --description "Codex skill for advisory Oracle second-opinion reviews"
 ```
 
-If your token cannot create repositories, create an empty private repository named `oracle-consult-skill` on GitHub first, then run:
+If your token cannot create repositories, create an empty public or private repository named `oracle-consult-skill` on GitHub first, then run:
 
 ```powershell
 git remote add origin https://github.com/<owner>/oracle-consult-skill.git
