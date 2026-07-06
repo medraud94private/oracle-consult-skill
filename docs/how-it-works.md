@@ -36,6 +36,12 @@ The easiest path is the root installer wizard:
 .\install.ps1
 ```
 
+On macOS/Linux:
+
+```bash
+./install.sh
+```
+
 It asks for language, install target, and optional Oracle browser login setup. The individual install shapes below remain available for automation or advanced use.
 
 Repository-level install is recommended. Use `-Scope user` only when you intentionally want Oracle Consult available across all projects.

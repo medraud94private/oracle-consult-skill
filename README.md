@@ -18,12 +18,40 @@ cd oracle-consult-skill
 .\install.ps1
 ```
 
+On macOS/Linux, use the shell installer instead:
+
+```bash
+git clone https://github.com/medraud94private/oracle-consult-skill.git
+cd oracle-consult-skill
+./install.sh
+```
+
+macOS prerequisites for real Oracle browser consults:
+
+```bash
+brew install node
+```
+
+You also need Chrome installed and a ChatGPT account you can sign into when Oracle opens the browser.
+
+If you downloaded a zip instead of cloning with git, make the scripts executable first:
+
+```bash
+chmod +x install.sh scripts/open-oracle-login.sh
+```
+
 The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted.
 
-Non-interactive repository-level install:
+Non-interactive repository-level install on Windows:
 
 ```powershell
 .\install.ps1 -Language ko -Preset all -Scope repo -RepoPath C:\path\to\target-repo -Force -NoPrompt
+```
+
+Non-interactive repository-level install on macOS/Linux:
+
+```bash
+./install.sh --language ko --preset all --scope repo --repo-path /path/to/target-repo --force --no-prompt
 ```
 
 Global user-level install, available across projects:
@@ -32,16 +60,34 @@ Global user-level install, available across projects:
 .\install.ps1 -Language ko -Preset all -Scope user -Force -NoPrompt
 ```
 
+On macOS/Linux:
+
+```bash
+./install.sh --language ko --preset all --scope user --force --no-prompt
+```
+
 Install into a repository and immediately open Oracle's ChatGPT login setup:
 
 ```powershell
 .\install.ps1 -Language ko -Preset all -Scope repo -RepoPath C:\path\to\target-repo -Force -NoPrompt -OpenOracle
 ```
 
+On macOS/Linux:
+
+```bash
+./install.sh --language ko --preset all --scope repo --repo-path /path/to/target-repo --force --no-prompt --open-oracle
+```
+
 Open only Oracle's browser login setup:
 
 ```powershell
 .\scripts\open-oracle-login.ps1 -Language ko
+```
+
+On macOS/Linux:
+
+```bash
+./scripts/open-oracle-login.sh --language ko
 ```
 
 Oracle login cannot be fully automated because the user must sign in to ChatGPT manually. The script can open Oracle's persistent Chrome profile, keep the browser open, and send only a harmless setup-check prompt after you approve it.
@@ -160,6 +206,13 @@ For marketplace-style install in Claude Code, add this repo as a marketplace and
 .\scripts\validate-claude-plugin.ps1
 .\scripts\smoke-claude-plugin-oracle.ps1
 .\scripts\open-oracle-login.ps1 -Language en -DryRun -Yes
+```
+
+On macOS/Linux:
+
+```bash
+./install.sh --language en --preset all --scope repo --repo-path /path/to/test-repo --force --no-prompt --no-open-oracle
+./scripts/open-oracle-login.sh --language en --dry-run --yes
 ```
 
 `smoke-oracle.ps1` uses `--dry-run`; it does not call a model.
