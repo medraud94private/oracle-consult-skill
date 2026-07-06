@@ -1,8 +1,0 @@
-interface:
-  display_name: "Oracle Consult"
-  short_description: "Ask Oracle for high-level second opinions."
-  default_prompt: "Use $oracle-consult to get a second-opinion review before changing the implementation."
-
-policy:
-  allow_implicit_invocation: false
-

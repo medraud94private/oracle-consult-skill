@@ -261,6 +261,32 @@ copy_dir() {
   cp -R "$source" "$target"
 }
 
+cleanup_legacy_standalone_skill() {
+  local base="$1"
+  local legacy_target="$base/oracle-consult"
+  local legacy_skill="$legacy_target/SKILL.md"
+
+  if [[ ! -e "$legacy_target" ]]; then
+    return
+  fi
+  if [[ ! -f "$legacy_skill" ]]; then
+    say "기존 oracle-consult 경로가 있지만 Oracle Consult standalone skill로 확인되지 않아 남겨둡니다: $legacy_target" "Legacy oracle-consult path exists but was not recognized as this standalone skill, so it was left in place: $legacy_target"
+    return
+  fi
+  if ! grep -Eq '^name:[[:space:]]*oracle-consult[[:space:]]*$' "$legacy_skill" || ! grep -q 'steipete/oracle' "$legacy_skill"; then
+    say "기존 oracle-consult 경로가 있지만 안전 마커가 맞지 않아 남겨둡니다: $legacy_target" "Legacy oracle-consult path exists but did not match the safety marker, so it was left in place: $legacy_target"
+    return
+  fi
+  if [[ "$FORCE" -ne 1 ]]; then
+    say "기존 standalone oracle-consult가 남아 있습니다. 이름 충돌을 없애려면 --force로 다시 설치하세요: $legacy_target" "Legacy standalone oracle-consult remains. Re-run with --force to remove the old conflicting name: $legacy_target"
+    return
+  fi
+
+  ensure_inside "$base" "$legacy_target"
+  rm -rf "$legacy_target"
+  say "기존 standalone oracle-consult 설치를 정리했습니다: $legacy_target" "Removed legacy standalone oracle-consult install: $legacy_target"
+}
+
 write_codex_marketplace() {
   local marketplace_path="$1"
   local marketplace_name="$2"
@@ -300,13 +326,14 @@ validate_basic_file() {
 
 install_codex_skill() {
   local base target source
-  source="$SCRIPT_DIR/skills/oracle-consult"
+  source="$SCRIPT_DIR/skills/oracle-consult-skill"
   if [[ "$INSTALL_SCOPE" == "repo" ]]; then
     base="$TARGET_REPO_PATH/.agents/skills"
   else
     base="$HOME/.agents/skills"
   fi
-  target="$base/oracle-consult"
+  target="$base/oracle-consult-skill"
+  cleanup_legacy_standalone_skill "$base"
   copy_dir "$source" "$target" "$base"
   validate_basic_file "$target/SKILL.md"
   say "Codex skill 설치 완료: $target" "Installed Codex skill: $target"
@@ -335,13 +362,14 @@ install_codex_plugin() {
 
 install_claude_skill() {
   local base target source
-  source="$SCRIPT_DIR/claude/skills/oracle-consult"
+  source="$SCRIPT_DIR/claude/skills/oracle-consult-skill"
   if [[ "$INSTALL_SCOPE" == "repo" ]]; then
     base="$TARGET_REPO_PATH/.claude/skills"
   else
     base="$HOME/.claude/skills"
   fi
-  target="$base/oracle-consult"
+  target="$base/oracle-consult-skill"
+  cleanup_legacy_standalone_skill "$base"
   copy_dir "$source" "$target" "$base"
   validate_basic_file "$target/SKILL.md"
   say "Claude Code skill 설치 완료: $target" "Installed Claude Code skill: $target"
@@ -441,6 +469,21 @@ elif [[ "$INSTALL_SCOPE" == "repo" ]]; then
 else
   say "다른 리포지터리에서도 보이지만, 이미 열린 세션은 새로 열거나 재시작해야 할 수 있습니다." "It is available across repositories, but already-open sessions may need a new thread or restart."
 fi
-say "Codex skill: \$oracle-consult 를 명시적으로 호출합니다. Codex plugin은 /plugins에서 Oracle Consult를 설치한 뒤 새 thread를 여세요." "Codex skill: explicitly invoke \$oracle-consult. For the Codex plugin, install Oracle Consult from /plugins, then open a new thread."
-say "Claude Code skill: /oracle-consult 로 호출합니다." "Claude Code skill: invoke /oracle-consult."
-say "Claude Code plugin: /oracle-consult:oracle-consult 로 호출합니다." "Claude Code plugin: invoke /oracle-consult:oracle-consult."
+if [[ "$SELECTED_PRESET" != "oracle-login" ]]; then
+  case "$SELECTED_PRESET" in
+    all|codex|skills|codex-skill)
+      say "Codex skill: \$oracle-consult-skill 를 명시적으로 호출합니다." "Codex skill: explicitly invoke \$oracle-consult-skill." ;;
+  esac
+  case "$SELECTED_PRESET" in
+    all|codex|plugins|codex-plugin)
+      say "Codex plugin: /plugins에서 Oracle Consult를 설치한 뒤 새 thread에서 \$oracle-consult 를 호출합니다." "Codex plugin: install Oracle Consult from /plugins, then invoke \$oracle-consult in a new thread." ;;
+  esac
+  case "$SELECTED_PRESET" in
+    all|claude|skills|claude-skill)
+      say "Claude Code skill: /oracle-consult-skill 로 호출합니다." "Claude Code skill: invoke /oracle-consult-skill." ;;
+  esac
+  case "$SELECTED_PRESET" in
+    all|claude|plugins|claude-plugin)
+      say "Claude Code plugin: /oracle-consult:oracle-consult 로 호출합니다." "Claude Code plugin: invoke /oracle-consult:oracle-consult." ;;
+  esac
+fi

@@ -4,12 +4,13 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "install-helpers.ps1")
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$source = Join-Path $repoRoot "claude\skills\oracle-consult"
+$source = Join-Path $repoRoot "claude\skills\oracle-consult-skill"
 $resolvedRepo = Resolve-Path $RepoPath
 $base = Join-Path $resolvedRepo ".claude\skills"
-$target = Join-Path $base "oracle-consult"
+$target = Join-Path $base "oracle-consult-skill"
 
 if (-not (Test-Path $source)) {
     throw "Claude skill source not found: $source"
@@ -20,6 +21,7 @@ if ((Test-Path $target) -and -not $Force) {
 }
 
 New-Item -ItemType Directory -Force -Path $base | Out-Null
+Remove-LegacyStandaloneOracleSkill -Base $base -Force:$Force
 
 $resolvedBase = [System.IO.Path]::GetFullPath($base)
 $resolvedTarget = [System.IO.Path]::GetFullPath($target)
@@ -34,5 +36,5 @@ if (Test-Path $target) {
 Copy-Item -LiteralPath $source -Destination $target -Recurse
 
 & (Join-Path $PSScriptRoot "validate-claude-skill.ps1") -SkillRoot $target
-Write-Host "Installed Claude Code oracle-consult skill to $target"
-Write-Host "Invoke in Claude Code with: /oracle-consult review this plan for missing risks."
+Write-Host "Installed Claude Code oracle-consult-skill skill to $target"
+Write-Host "Invoke in Claude Code with: /oracle-consult-skill review this plan for missing risks."

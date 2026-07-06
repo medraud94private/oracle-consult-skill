@@ -238,6 +238,44 @@ function copyDir(source, target, base) {
   fs.cpSync(source, target, { recursive: true });
 }
 
+function cleanupLegacyStandaloneSkill(base) {
+  const legacyTarget = path.join(base, "oracle-consult");
+  const legacySkill = path.join(legacyTarget, "SKILL.md");
+  if (!fs.existsSync(legacyTarget)) return;
+  if (!fs.existsSync(legacySkill) || !fs.statSync(legacySkill).isFile()) {
+    say(
+      `기존 oracle-consult 경로가 있지만 Oracle Consult standalone skill로 확인되지 않아 남겨둡니다: ${legacyTarget}`,
+      `Legacy oracle-consult path exists but was not recognized as this standalone skill, so it was left in place: ${legacyTarget}`,
+    );
+    return;
+  }
+
+  const text = fs.readFileSync(legacySkill, "utf8");
+  const isLegacy = /^name:\s*oracle-consult\s*$/m.test(text) && text.includes("steipete/oracle");
+  if (!isLegacy) {
+    say(
+      `기존 oracle-consult 경로가 있지만 안전 마커가 맞지 않아 남겨둡니다: ${legacyTarget}`,
+      `Legacy oracle-consult path exists but did not match the safety marker, so it was left in place: ${legacyTarget}`,
+    );
+    return;
+  }
+
+  if (!options.force) {
+    say(
+      `기존 standalone oracle-consult가 남아 있습니다. 이름 충돌을 없애려면 --force로 다시 설치하세요: ${legacyTarget}`,
+      `Legacy standalone oracle-consult remains. Re-run with --force to remove the old conflicting name: ${legacyTarget}`,
+    );
+    return;
+  }
+
+  ensureInside(base, legacyTarget);
+  fs.rmSync(legacyTarget, { recursive: true, force: true });
+  say(
+    `기존 standalone oracle-consult 설치를 정리했습니다: ${legacyTarget}`,
+    `Removed legacy standalone oracle-consult install: ${legacyTarget}`,
+  );
+}
+
 function validateFile(file) {
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) {
     throw new Error(`Missing expected file: ${file}`);
@@ -263,8 +301,9 @@ function writeCodexMarketplace(marketplacePath, name, displayName) {
 
 function installCodexSkill(scope, targetRepoPath) {
   const base = scope === "repo" ? path.join(targetRepoPath, ".agents", "skills") : path.join(os.homedir(), ".agents", "skills");
-  const target = path.join(base, "oracle-consult");
-  copyDir(path.join(repoRoot, "skills", "oracle-consult"), target, base);
+  const target = path.join(base, "oracle-consult-skill");
+  cleanupLegacyStandaloneSkill(base);
+  copyDir(path.join(repoRoot, "skills", "oracle-consult-skill"), target, base);
   validateFile(path.join(target, "SKILL.md"));
   say(`Codex skill 설치 완료: ${target}`, `Installed Codex skill: ${target}`);
 }
@@ -284,8 +323,9 @@ function installCodexPlugin(scope, targetRepoPath) {
 
 function installClaudeSkill(scope, targetRepoPath) {
   const base = scope === "repo" ? path.join(targetRepoPath, ".claude", "skills") : path.join(os.homedir(), ".claude", "skills");
-  const target = path.join(base, "oracle-consult");
-  copyDir(path.join(repoRoot, "claude", "skills", "oracle-consult"), target, base);
+  const target = path.join(base, "oracle-consult-skill");
+  cleanupLegacyStandaloneSkill(base);
+  copyDir(path.join(repoRoot, "claude", "skills", "oracle-consult-skill"), target, base);
   validateFile(path.join(target, "SKILL.md"));
   say(`Claude Code skill 설치 완료: ${target}`, `Installed Claude Code skill: ${target}`);
 }
@@ -389,8 +429,19 @@ if (selectedPreset === "oracle-login") {
 } else {
   say("다른 리포지터리에서도 보이지만, 이미 열린 세션은 새로 열거나 재시작해야 할 수 있습니다.", "It is available across repositories, but already-open sessions may need a new thread or restart.");
 }
-say("Codex skill: $oracle-consult 를 명시적으로 호출합니다. Codex plugin은 /plugins에서 Oracle Consult를 설치한 뒤 새 thread를 여세요.", "Codex skill: explicitly invoke $oracle-consult. For the Codex plugin, install Oracle Consult from /plugins, then open a new thread.");
-say("Claude Code skill: /oracle-consult 로 호출합니다.", "Claude Code skill: invoke /oracle-consult.");
-say("Claude Code plugin: /oracle-consult:oracle-consult 로 호출합니다.", "Claude Code plugin: invoke /oracle-consult:oracle-consult.");
+if (selectedPreset !== "oracle-login") {
+  if (["all", "codex", "skills", "codex-skill"].includes(selectedPreset)) {
+    say("Codex skill: $oracle-consult-skill 를 명시적으로 호출합니다.", "Codex skill: explicitly invoke $oracle-consult-skill.");
+  }
+  if (["all", "codex", "plugins", "codex-plugin"].includes(selectedPreset)) {
+    say("Codex plugin: /plugins에서 Oracle Consult를 설치한 뒤 새 thread에서 $oracle-consult 를 호출합니다.", "Codex plugin: install Oracle Consult from /plugins, then invoke $oracle-consult in a new thread.");
+  }
+  if (["all", "claude", "skills", "claude-skill"].includes(selectedPreset)) {
+    say("Claude Code skill: /oracle-consult-skill 로 호출합니다.", "Claude Code skill: invoke /oracle-consult-skill.");
+  }
+  if (["all", "claude", "plugins", "claude-plugin"].includes(selectedPreset)) {
+    say("Claude Code plugin: /oracle-consult:oracle-consult 로 호출합니다.", "Claude Code plugin: invoke /oracle-consult:oracle-consult.");
+  }
+}
 
 rl.close();

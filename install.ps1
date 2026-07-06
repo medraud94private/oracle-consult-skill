@@ -284,6 +284,17 @@ if ($selectedPreset -eq "oracle-login") {
 } else {
     Say "다른 리포지터리에서도 보이지만, 이미 열린 세션은 새로 열거나 재시작해야 할 수 있습니다." "It is available across repositories, but already-open sessions may need a new thread or restart."
 }
-Say "Codex skill: `$oracle-consult 를 명시적으로 호출합니다. Codex plugin은 /plugins에서 Oracle Consult를 설치한 뒤 새 thread를 여세요." "Codex skill: explicitly invoke `$oracle-consult. For the Codex plugin, install Oracle Consult from /plugins, then open a new thread."
-Say "Claude Code skill: /oracle-consult 로 호출합니다." "Claude Code skill: invoke /oracle-consult."
-Say "Claude Code plugin: /oracle-consult:oracle-consult 로 호출합니다." "Claude Code plugin: invoke /oracle-consult:oracle-consult."
+if ($selectedPreset -ne "oracle-login") {
+    if (@("all", "codex", "skills", "codex-skill") -contains $selectedPreset) {
+        Say "Codex skill: `$oracle-consult-skill 를 명시적으로 호출합니다." "Codex skill: explicitly invoke `$oracle-consult-skill."
+    }
+    if (@("all", "codex", "plugins", "codex-plugin") -contains $selectedPreset) {
+        Say "Codex plugin: /plugins에서 Oracle Consult를 설치한 뒤 새 thread에서 `$oracle-consult 를 호출합니다." "Codex plugin: install Oracle Consult from /plugins, then invoke `$oracle-consult in a new thread."
+    }
+    if (@("all", "claude", "skills", "claude-skill") -contains $selectedPreset) {
+        Say "Claude Code skill: /oracle-consult-skill 로 호출합니다." "Claude Code skill: invoke /oracle-consult-skill."
+    }
+    if (@("all", "claude", "plugins", "claude-plugin") -contains $selectedPreset) {
+        Say "Claude Code plugin: /oracle-consult:oracle-consult 로 호출합니다." "Claude Code plugin: invoke /oracle-consult:oracle-consult."
+    }
+}

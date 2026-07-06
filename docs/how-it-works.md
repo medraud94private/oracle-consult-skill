@@ -1,14 +1,14 @@
 # How It Works
 
-`oracle-consult` is a workflow package, not a model provider.
+`oracle-consult-skill` is a workflow package, not a model provider.
 
 The package does not contain GPT-5.5 Pro access by itself. It teaches Codex or Claude Code when and how to call `steipete/oracle`, which then bundles a prompt plus selected files and sends them through one of Oracle's engines.
 
 ## Layers
 
 1. **Agent-facing wrapper**
-   - Codex skill: `skills/oracle-consult/SKILL.md`
-   - Claude Code skill: `claude/skills/oracle-consult/SKILL.md`
+   - Codex standalone skill: `skills/oracle-consult-skill/SKILL.md`
+   - Claude Code standalone skill: `claude/skills/oracle-consult-skill/SKILL.md`
    - Codex plugin: `plugins/oracle-consult/`
    - Claude Code plugin: `claude/plugins/oracle-consult/`
 
@@ -60,12 +60,14 @@ Repository-level install is recommended. Use `-Scope user` only when you intenti
 
 | Shape | Repo-level command | User-level command | Invocation |
 | --- | --- | --- | --- |
-| Codex skill | `.\scripts\install-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-user.ps1` | `$oracle-consult` |
-| Claude Code skill | `.\scripts\install-claude-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-claude-user.ps1` | `/oracle-consult` |
+| Codex skill | `.\scripts\install-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-user.ps1` | `$oracle-consult-skill` |
+| Claude Code skill | `.\scripts\install-claude-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-claude-user.ps1` | `/oracle-consult-skill` |
 | Codex plugin | `.\scripts\install-codex-plugin-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-codex-plugin-user.ps1` | `$oracle-consult` after `/plugins` install |
 | Claude Code plugin | `.\scripts\install-claude-plugin-repo.ps1 -RepoPath C:\path\to\repo` | `.\scripts\install-claude-plugin-user.ps1` | `/oracle-consult:oracle-consult` |
 
-The wrapper shape changes discovery and invocation. It does not change the actual consult backend: real GPT-5.5 Pro consults still go through `@steipete/oracle`.
+The wrapper shape changes discovery and invocation. It does not change the actual consult backend: real GPT-5.5 Pro consults still go through `@steipete/oracle`. If you install both a standalone skill and a plugin, use the `-skill` name for the standalone skill and the plain `oracle-consult` namespace for the plugin.
+
+When upgrading from an older standalone install, run the installer with `-Force` / `--force`. It removes only the legacy standalone `oracle-consult` skill folder when the copied `SKILL.md` still matches this package's safety marker.
 
 Oracle browser setup can be started by the wizard or directly:
 
@@ -103,8 +105,8 @@ In that future shape, Oracle would become one backend among several.
 Use explicit invocation:
 
 ```text
-Use $oracle-consult to review this patch plan for missing risks.
-/oracle-consult review this patch plan for missing risks.
+Use $oracle-consult-skill to review this patch plan for missing risks.
+/oracle-consult-skill review this patch plan for missing risks.
 /oracle-consult:oracle-consult review this patch plan for missing risks.
 ```
 

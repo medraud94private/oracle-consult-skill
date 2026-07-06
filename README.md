@@ -56,6 +56,8 @@ chmod +x install.sh scripts/open-oracle-login.sh
 
 The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted.
 
+Install modes are intentionally name-separated: standalone skills install as `oracle-consult-skill`, while plugins keep the `oracle-consult` namespace. If you are upgrading from an older standalone install, use `-Force` / `--force`; the installer removes the old standalone `oracle-consult` skill folder when it matches this package's safety marker.
+
 Non-interactive repository-level install on Windows:
 
 ```powershell
@@ -128,14 +130,14 @@ Oracle login cannot be fully automated because the user must sign in to ChatGPT 
 
 Yes for the main workflow. This skill is a Codex instruction wrapper around the `@steipete/oracle` CLI. Without Oracle installed or runnable through `npx`, Codex can still read the skill's safety rules and prompt patterns, but it cannot perform the actual GPT-5.5 Pro consult.
 
-That is why the repo and skill use the `oracle-consult` name. If this later supports multiple consult backends, a better name would be `second-opinion-consult`, with Oracle as one provider.
+That is why this repo uses the `oracle-consult-skill` name. The standalone skill is named `oracle-consult-skill` so it can coexist with the plugin, whose namespace remains `oracle-consult`. If this later supports multiple consult backends, a better name would be `second-opinion-consult`, with Oracle as one provider.
 
 ## How Codex Calls It
 
 After installation, ask Codex explicitly:
 
 ```text
-Use $oracle-consult to pressure-test this implementation plan before we edit files.
+Use $oracle-consult-skill to pressure-test this implementation plan before we edit files.
 ```
 
 The skill is configured with `allow_implicit_invocation: false`, so Codex should not silently use it just because a task is hard. This avoids accidental external disclosure. A real consult should follow this shape:
@@ -209,7 +211,7 @@ Claude Code plugin, user-level install:
 In Claude Code, invoke the standalone skill or plugin skill:
 
 ```text
-/oracle-consult review this patch plan for missing risks
+/oracle-consult-skill review this patch plan for missing risks
 /oracle-consult:oracle-consult review this patch plan for missing risks
 ```
 
@@ -264,7 +266,7 @@ For browser mode, sign in once to Oracle's private ChatGPT profile:
 npx -y @steipete/oracle --engine browser --browser-manual-login `
   --browser-keep-browser `
   -p "HI" `
-  --file "$env:USERPROFILE\.agents\skills\oracle-consult\SKILL.md"
+  --file "$env:USERPROFILE\.agents\skills\oracle-consult-skill\SKILL.md"
 ```
 
 Then run consults with explicit prompts and tight file sets.

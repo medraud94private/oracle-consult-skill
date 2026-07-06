@@ -1,5 +1,5 @@
 param(
-    [string]$SkillRoot = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "claude\skills\oracle-consult")
+    [string]$SkillRoot = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "claude\skills\oracle-consult-skill")
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,8 +21,8 @@ if (-not (Test-Path $skillFile)) {
     Add-ErrorMessage "Missing SKILL.md"
 } else {
     $skillText = Get-Content -LiteralPath $skillFile -Raw
-    if ($skillText -notmatch "(?m)^---\s*\r?\nname:\s*oracle-consult\r?\ndescription:\s*.+") {
-        Add-ErrorMessage "SKILL.md frontmatter must include name: oracle-consult and description."
+    if ($skillText -notmatch "(?m)^---\s*\r?\nname:\s*oracle-consult-skill\r?\ndescription:\s*.+") {
+        Add-ErrorMessage "SKILL.md frontmatter must include name: oracle-consult-skill and description."
     }
     if ($skillText -notmatch "(?m)^disable-model-invocation:\s*true\s*$") {
         Add-ErrorMessage "Claude skill must set disable-model-invocation: true."
@@ -66,4 +66,3 @@ if ($errors.Count -gt 0) {
 }
 
 Write-Host "Claude skill validation passed: $skillPath"
-

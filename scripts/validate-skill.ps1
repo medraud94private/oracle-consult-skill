@@ -1,5 +1,5 @@
 param(
-    [string]$SkillRoot = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "skills\oracle-consult")
+    [string]$SkillRoot = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")) "skills\oracle-consult-skill")
 )
 
 $ErrorActionPreference = "Stop"
@@ -22,8 +22,8 @@ if (-not (Test-Path $skillFile)) {
     Add-ErrorMessage "Missing SKILL.md"
 } else {
     $skillText = Get-Content -LiteralPath $skillFile -Raw
-    if ($skillText -notmatch "(?m)^---\s*\r?\nname:\s*oracle-consult\r?\ndescription:\s*.+\r?\n---") {
-        Add-ErrorMessage "SKILL.md frontmatter must include name: oracle-consult and description."
+    if ($skillText -notmatch "(?m)^---\s*\r?\nname:\s*oracle-consult-skill\r?\ndescription:\s*.+\r?\n---") {
+        Add-ErrorMessage "SKILL.md frontmatter must include name: oracle-consult-skill and description."
     }
     if ($skillText -match "TODO|\[TODO\]") {
         Add-ErrorMessage "SKILL.md still contains TODO markers."
@@ -43,8 +43,8 @@ if (-not (Test-Path $metadataFile)) {
     if ($metadataText -notmatch "allow_implicit_invocation:\s*false") {
         Add-ErrorMessage "agents/openai.yaml must disable implicit invocation."
     }
-    if ($metadataText -notmatch 'default_prompt:\s*"Use \$oracle-consult') {
-        Add-ErrorMessage "agents/openai.yaml default_prompt should mention `$oracle-consult."
+    if ($metadataText -notmatch 'default_prompt:\s*"Use \$oracle-consult-skill') {
+        Add-ErrorMessage "agents/openai.yaml default_prompt should mention `$oracle-consult-skill."
     }
 }
 
@@ -76,4 +76,3 @@ if ($errors.Count -gt 0) {
 }
 
 Write-Host "Skill validation passed: $skillPath"
-

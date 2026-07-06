@@ -1,15 +1,18 @@
 ---
-name: oracle-consult
-description: Use steipete/oracle from Codex as an explicit advisory second-opinion lane for hard debugging, architecture tradeoffs, implementation plans, code-review pressure testing, regression-risk searches, and "what am I missing?" improvement passes. Use when the user asks for Oracle, GPT-5.5 Pro, 5.5 Pro, second opinion, external review, consult, challenge pass, counterargument, design pressure-test, or Codex-side thinking improvement. Do not use as product runtime, deployment proof, persona output, model-verification evidence, or a substitute for local code/test verification.
+name: oracle-consult-skill
+description: Explicit standalone advisory second-opinion workflow for Claude Code using steipete/oracle. Use when the user explicitly asks for Oracle, GPT-5.5 Pro, second opinion, external review, consult, challenge pass, counterargument, design pressure-test, or missing-risk discovery. Do not use as product runtime, deployment proof, persona output, model-verification evidence, or a substitute for local code/test verification.
+disable-model-invocation: true
 ---
 
 # Oracle Consult
 
 ## Overview
 
-Use Oracle as a Codex-side review council: it bundles a prompt and selected files for an external model, usually ChatGPT GPT-5.5 Pro in browser mode, then returns advice that Codex must verify locally.
+Use Oracle as a Claude Code-side review council: it bundles a prompt and selected files for an external model, usually ChatGPT GPT-5.5 Pro in browser mode, then returns advice that Claude Code must verify locally.
 
 Oracle output is advisory only. It can suggest risks, alternatives, tests, and plans; it must not be treated as runtime evidence, product LLM output, server verification, or permission to mutate files.
+
+This skill disables automatic model invocation. The user must explicitly call it with `/oracle-consult-skill`.
 
 ## Consult Decision
 
@@ -30,10 +33,10 @@ Skip Oracle for routine edits, simple lookups, tasks where local files/tests alr
 - Send the minimum file set that contains the truth. Prefer exact files and tight globs over whole-repo bundles.
 - Before any browser or API consult, show the user the exact prompt, files/globs, engine, and cost/disclosure implications unless they already explicitly requested Oracle and the file set is non-sensitive.
 - Always run `--dry-run summary --files-report` before browser/API consults and inspect the resolved files.
-- Treat all Oracle conclusions as hypotheses. Re-read the cited files, implement only after Codex judgment, and verify with local tests or documented evidence.
+- Treat all Oracle conclusions as hypotheses. Re-read the cited files, implement only after Claude Code judgment, and verify with local tests or documented evidence.
 - API-mode Oracle runs can cost money; use browser mode or render/copy unless the user explicitly approves an API spend.
 - If a browser/API run detaches or times out, inspect `oracle status` / `oracle session` before rerunning.
-- Do not commit or casually share Oracle session artifacts from `$env:USERPROFILE\.oracle\sessions`; transcripts can contain prompt and attached-file content.
+- Do not commit or casually share Oracle session artifacts from `$HOME/.oracle/sessions`; transcripts can contain prompt and attached-file content.
 
 Prerequisites: Node 24+, Chrome or Chromium for browser mode, a signed-in ChatGPT account for browser mode, and explicit user approval for API mode or any paid provider route.
 
@@ -43,56 +46,56 @@ Write a standalone consult prompt with:
 
 - project and stack briefing
 - exact question
-- what Codex already checked, with errors or evidence quoted exactly
+- what Claude Code already checked, with errors or evidence quoted exactly
 - constraints and non-goals
 - requested output shape, usually "find risks, counterarguments, missing tests, and a recommended next step"
 
-Prefer asking Oracle to challenge assumptions over asking it to decide. The user remains the decision authority; Codex remains responsible for implementation and verification.
+Prefer asking Oracle to challenge assumptions over asking it to decide. The user remains the decision authority; Claude Code remains responsible for implementation and verification.
 
 ## Command Patterns
 
 Before spending tokens or launching a browser, preview the bundle:
 
-```powershell
-npx -y @steipete/oracle --dry-run summary --files-report `
-  -p "<standalone consult prompt>" `
-  --file "path/to/key/file.py" `
-  --file "path/to/docs/*.md" `
-  --file "!**/.env" `
+```bash
+npx -y @steipete/oracle --dry-run summary --files-report \
+  -p "<standalone consult prompt>" \
+  --file "path/to/key/file.py" \
+  --file "path/to/docs/*.md" \
+  --file "!**/.env" \
   --file "!**/*secret*"
 ```
 
 If browser mode has never been initialized on this computer, run the one-time visible login setup and let the user sign in to ChatGPT in Oracle's private Chrome profile:
 
-```powershell
-npx -y @steipete/oracle --engine browser --browser-manual-login `
-  --browser-keep-browser `
-  -p "HI" `
-  --file "$env:USERPROFILE\.agents\skills\oracle-consult\SKILL.md"
+```bash
+npx -y @steipete/oracle --engine browser --browser-manual-login \
+  --browser-keep-browser \
+  -p "HI" \
+  --file "$HOME/.claude/skills/oracle-consult-skill/SKILL.md"
 ```
 
 Retry the real consult only after that profile is signed in. If the user prefers an already signed-in Chrome session, try `--browser-attach-running` instead, but treat attach failures as setup blockers rather than rerunning the same prompt repeatedly.
 
 Preferred deep consult path:
 
-```powershell
-npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
-  --slug "<short-topic>" `
-  -p "<standalone consult prompt>" `
+```bash
+npx -y @steipete/oracle --engine browser --model gpt-5.5-pro \
+  --slug "<short-topic>" \
+  -p "<standalone consult prompt>" \
   --file "path/to/key/file.py"
 ```
 
 Manual fallback when automation is blocked:
 
-```powershell
-npx -y @steipete/oracle --render --copy `
-  -p "<standalone consult prompt>" `
+```bash
+npx -y @steipete/oracle --render --copy \
+  -p "<standalone consult prompt>" \
   --file "path/to/key/file.py"
 ```
 
 Session recovery:
 
-```powershell
+```bash
 npx -y @steipete/oracle status --hours 72
 npx -y @steipete/oracle session <id-or-slug> --render
 ```
@@ -100,14 +103,3 @@ npx -y @steipete/oracle session <id-or-slug> --render
 ## Applying Advice
 
 After Oracle responds, summarize only the useful findings to the user. Separate: accepted findings, rejected findings, open questions, and local verification still required. Never cite Oracle alone as proof that code is correct, complete, live, real-LLM-verified, or server-verified.
-
-## Portable Distribution
-
-If this workflow is promoted into a separate Git-managed methodology, keep the install unit as a plain Codex skill first:
-
-- User-level install: copy the `oracle-consult` folder into `$env:USERPROFILE\.agents\skills\oracle-consult` for current Codex skill discovery. Some setups also support `$env:USERPROFILE\.codex\skills\oracle-consult`; keep that as a compatibility option.
-- Repo-level install: copy the folder into `<repo>\.agents\skills\oracle-consult`.
-- Keep `SKILL.md` as the required skill file and `agents/openai.yaml` as the recommended UI/policy metadata file.
-- Add installer scripts only outside the skill folder, for example `scripts/install-user.ps1` and `scripts/install-repo.ps1`, so the skill itself stays lean.
-- Package as a Codex plugin later only if it needs bundled MCP config, app integrations, marketplace metadata, or multiple coordinated skills.
-

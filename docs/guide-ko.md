@@ -6,7 +6,7 @@
 
 ## 한 줄 결론
 
-설치만 하면 Codex가 `$oracle-consult` 스킬을 읽고 사용할 수 있다. 다만 실제 GPT-5.5 Pro 컨설트 실행은 `@steipete/oracle` CLI가 필요하다.
+설치만 하면 Codex가 standalone `$oracle-consult-skill` 스킬을 읽고 사용할 수 있다. 다만 실제 GPT-5.5 Pro 컨설트 실행은 `@steipete/oracle` CLI가 필요하다.
 
 즉:
 
@@ -65,6 +65,8 @@ chmod +x install.sh scripts/open-oracle-login.sh
 추천은 리포지터리별 설치다. 그래야 실제 사용할 repo 안에서만 보이고, 다른 프로젝트에 의도치 않게 노출되지 않는다.
 
 wizard가 처음에 언어를 묻고, 설치 범위와 설치 대상을 고르게 한다.
+
+이름은 의도적으로 분리했다. standalone skill은 `oracle-consult-skill`로 설치되고, plugin은 기존 `oracle-consult` namespace를 유지한다. 예전 standalone 설치가 남아 있다면 `-Force` / `--force`로 다시 설치하면 안전 마커가 맞는 기존 `oracle-consult` standalone 폴더를 정리한다.
 
 ```text
 설치 범위:
@@ -160,7 +162,7 @@ cd C:\project\oracle-consult-skill
 이 명령은 스킬을 현재 Codex 사용자 스킬 위치로 복사한다.
 
 ```text
-$HOME\.agents\skills\oracle-consult
+$HOME\.agents\skills\oracle-consult-skill
 ```
 
 구형 Codex 환경이 `$HOME\.codex\skills`를 읽는다면 호환 설치도 가능하다.
@@ -178,12 +180,12 @@ $HOME\.agents\skills\oracle-consult
 그러면 아래 위치에 들어간다.
 
 ```text
-<repo>\.agents\skills\oracle-consult
+<repo>\.agents\skills\oracle-consult-skill
 ```
 
 ## Claude Code에서 쓰려면
 
-Claude Code는 Codex의 `$oracle-consult` 문법을 그대로 쓰지 않는다. Claude Code에서는 skill이 slash command처럼 노출된다.
+Claude Code는 Codex의 `$oracle-consult-skill` 문법을 그대로 쓰지 않는다. Claude Code에서는 skill이 slash command처럼 노출된다.
 
 사용자 전체에 설치:
 
@@ -195,7 +197,7 @@ cd C:\project\oracle-consult-skill
 설치 위치:
 
 ```text
-$HOME\.claude\skills\oracle-consult
+$HOME\.claude\skills\oracle-consult-skill
 ```
 
 특정 repo에서만 쓰고 싶으면:
@@ -207,19 +209,19 @@ $HOME\.claude\skills\oracle-consult
 설치 위치:
 
 ```text
-<repo>\.claude\skills\oracle-consult
+<repo>\.claude\skills\oracle-consult-skill
 ```
 
 Claude Code 안에서는 이렇게 호출한다.
 
 ```text
-/oracle-consult review this implementation plan for counterarguments and missing tests.
+/oracle-consult-skill review this implementation plan for counterarguments and missing tests.
 ```
 
 한국어로는:
 
 ```text
-/oracle-consult 이 패치 계획 반론이랑 빠진 테스트를 봐줘. 아직 파일 수정은 하지 마.
+/oracle-consult-skill 이 패치 계획 반론이랑 빠진 테스트를 봐줘. 아직 파일 수정은 하지 마.
 ```
 
 Claude Code용 스킬 파일에는 아래 설정이 들어 있다.
@@ -228,7 +230,7 @@ Claude Code용 스킬 파일에는 아래 설정이 들어 있다.
 disable-model-invocation: true
 ```
 
-즉 Claude Code가 이 스킬을 자동으로 모델 호출용으로 쓰지 않게 막고, 사용자가 `/oracle-consult`로 명시했을 때만 쓰는 구조다.
+즉 Claude Code가 이 스킬을 자동으로 모델 호출용으로 쓰지 않게 막고, 사용자가 `/oracle-consult-skill`로 명시했을 때만 쓰는 구조다.
 
 설치 후 slash command가 바로 안 보이면 Claude Code를 재시작하거나 새 세션에서 확인한다.
 
@@ -241,7 +243,7 @@ Claude Code용 검증:
 
 ## Claude Code 플러그인으로 쓰려면
 
-가능하다. 이 경우 standalone skill인 `/oracle-consult`가 아니라 plugin namespace가 붙은 slash command로 호출한다.
+가능하다. 이 경우 standalone skill인 `/oracle-consult-skill`이 아니라 plugin namespace가 붙은 slash command로 호출한다.
 
 특정 repo에서만 쓰는 plugin으로 설치:
 
@@ -319,19 +321,19 @@ policy:
 예:
 
 ```text
-Use $oracle-consult to pressure-test this implementation plan before editing files.
+Use $oracle-consult-skill to pressure-test this implementation plan before editing files.
 ```
 
 한국어로도 이렇게 요청하면 된다.
 
 ```text
-$oracle-consult 써서 이 설계안 반론이랑 빠진 테스트를 봐줘. 아직 파일 수정은 하지 말고.
+$oracle-consult-skill 써서 이 설계안 반론이랑 빠진 테스트를 봐줘. 아직 파일 수정은 하지 말고.
 ```
 
 또는:
 
 ```text
-Use $oracle-consult to review this patch plan for missing risks.
+Use $oracle-consult-skill to review this patch plan for missing risks.
 ```
 
 Codex가 새로 설치한 스킬을 바로 못 보면 새 스레드를 열거나 Codex 앱/CLI를 재시작한다.
@@ -392,7 +394,7 @@ plugins/oracle-consult/skills/oracle-consult/SKILL.md
 
 ## 실제 동작 순서
 
-1. 사용자가 `$oracle-consult`를 명시한다.
+1. 사용자가 standalone이면 `$oracle-consult-skill`, Codex plugin이면 `$oracle-consult`를 명시한다.
 2. Codex가 `SKILL.md`를 읽는다.
 3. Codex가 독립 실행 가능한 컨설트 프롬프트를 만든다.
 4. Codex가 보낼 파일/glob, 엔진, 비용/외부공유 위험을 사용자에게 보여준다.
@@ -431,7 +433,7 @@ npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
 npx -y @steipete/oracle --engine browser --browser-manual-login `
   --browser-keep-browser `
   -p "HI" `
-  --file "$env:USERPROFILE\.agents\skills\oracle-consult\SKILL.md"
+  --file "$env:USERPROFILE\.agents\skills\oracle-consult-skill\SKILL.md"
 ```
 
 브라우저가 뜨면 ChatGPT에 로그인한다. 이후에는 같은 프로필을 재사용한다.
