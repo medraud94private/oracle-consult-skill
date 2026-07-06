@@ -1,0 +1,21 @@
+{
+  "name": "oracle-consult",
+  "displayName": "Oracle Consult",
+  "version": "0.1.0",
+  "description": "Advisory second-opinion reviews via steipete/oracle.",
+  "author": {
+    "name": "Moncaso",
+    "url": "https://github.com/medraud94private"
+  },
+  "homepage": "https://github.com/medraud94private/oracle-consult-skill",
+  "repository": "https://github.com/medraud94private/oracle-consult-skill",
+  "license": "MIT",
+  "keywords": [
+    "oracle",
+    "claude-code",
+    "second-opinion",
+    "review",
+    "gpt-5.5-pro"
+  ],
+  "skills": "./skills/"
+}

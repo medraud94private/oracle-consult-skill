@@ -66,6 +66,39 @@ In Claude Code, invoke it as a slash command:
 /oracle-consult review this patch plan for missing risks
 ```
 
+Claude Code plugin install:
+
+```powershell
+.\scripts\install-claude-plugin-user.ps1
+```
+
+In Claude Code, invoke the plugin skill with its namespace:
+
+```text
+/oracle-consult:oracle-consult review this patch plan for missing risks
+```
+
+For local plugin development without installing:
+
+```powershell
+claude --plugin-dir .\claude\plugins\oracle-consult
+```
+
+For marketplace-style install in Claude Code, add this repo as a marketplace and install the plugin:
+
+```text
+/plugin marketplace add C:\project\oracle-consult-skill
+/plugin install oracle-consult@oracle-consult-tools
+```
+
+Codex plugin directory install/search flow:
+
+```powershell
+.\scripts\install-codex-plugin-user.ps1
+```
+
+Then start a new Codex thread, open `/plugins`, search for **Oracle Consult**, and choose **Install plugin**. This uses the personal marketplace at `$HOME\.agents\plugins\marketplace.json`.
+
 ## Validate
 
 ```powershell
@@ -73,6 +106,9 @@ In Claude Code, invoke it as a slash command:
 .\scripts\smoke-oracle.ps1
 .\scripts\validate-claude-skill.ps1
 .\scripts\smoke-claude-oracle.ps1
+.\scripts\validate-codex-plugin.ps1
+.\scripts\validate-claude-plugin.ps1
+.\scripts\smoke-claude-plugin-oracle.ps1
 ```
 
 `smoke-oracle.ps1` uses `--dry-run`; it does not call a model.

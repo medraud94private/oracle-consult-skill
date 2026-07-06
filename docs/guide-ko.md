@@ -107,6 +107,59 @@ Claude Code용 검증:
 .\scripts\smoke-claude-oracle.ps1
 ```
 
+## Claude Code 플러그인으로 쓰려면
+
+가능하다. 이 경우 standalone skill인 `/oracle-consult`가 아니라 plugin namespace가 붙은 slash command로 호출한다.
+
+사용자 전체에 자동 로드되는 skills-directory plugin으로 설치:
+
+```powershell
+cd C:\project\oracle-consult-skill
+.\scripts\install-claude-plugin-user.ps1
+```
+
+설치 위치:
+
+```text
+$HOME\.claude\skills\oracle-consult-plugin
+```
+
+Claude Code 안에서는 이렇게 호출한다.
+
+```text
+/oracle-consult:oracle-consult review this implementation plan for counterarguments and missing tests.
+```
+
+설치하지 않고 개발 중인 plugin 폴더를 바로 테스트하려면:
+
+```powershell
+claude --plugin-dir .\claude\plugins\oracle-consult
+```
+
+Claude Code의 marketplace 흐름으로 설치하려면 이 repo를 marketplace로 추가한 뒤 plugin을 설치한다.
+
+```text
+/plugin marketplace add C:\project\oracle-consult-skill
+/plugin install oracle-consult@oracle-consult-tools
+```
+
+repo 안의 Claude plugin 구조:
+
+```text
+.claude-plugin/marketplace.json
+claude/plugins/oracle-consult/.claude-plugin/plugin.json
+claude/plugins/oracle-consult/skills/oracle-consult/SKILL.md
+```
+
+검증:
+
+```powershell
+.\scripts\validate-claude-plugin.ps1
+.\scripts\smoke-claude-plugin-oracle.ps1
+```
+
+주의: Claude Code plugin으로 설치해도 실제 GPT-5.5 Pro consult는 여전히 `@steipete/oracle` CLI가 실행한다. plugin은 공유/설치/검색을 쉽게 만드는 포장 단위다.
+
 ## 설치 후 Codex에서 어떻게 호출하나
 
 이 스킬은 자동 호출을 꺼두었다.
@@ -137,6 +190,44 @@ Use $oracle-consult to review this patch plan for missing risks.
 ```
 
 Codex가 새로 설치한 스킬을 바로 못 보면 새 스레드를 열거나 Codex 앱/CLI를 재시작한다.
+
+## Codex 플러그인 검색/설치로 쓰려면
+
+가능하다. 이 경우 단순히 skill 폴더를 복사하는 것이 아니라 Codex plugin과 marketplace 구조를 쓴다.
+
+먼저 이 저장소에서 user-level plugin marketplace에 등록한다.
+
+```powershell
+cd C:\project\oracle-consult-skill
+.\scripts\install-codex-plugin-user.ps1
+```
+
+이 명령은 아래 두 가지를 만든다.
+
+```text
+$HOME\.agents\plugins\plugins\oracle-consult
+$HOME\.agents\plugins\marketplace.json
+```
+
+그 다음 Codex에서 새 스레드를 열고 `/plugins`를 연다. 검색창에서 `Oracle Consult`를 찾아 **Install plugin**을 누르면 된다.
+
+왜 새 스레드가 필요하냐면 Codex는 thread 시작 시점에 plugin/skill 목록을 로드하기 때문이다.
+
+플러그인 구조는 repo 안에도 들어 있다.
+
+```text
+plugins/oracle-consult/.codex-plugin/plugin.json
+plugins/oracle-consult/skills/oracle-consult/SKILL.md
+.agents/plugins/marketplace.json
+```
+
+검증:
+
+```powershell
+.\scripts\validate-codex-plugin.ps1
+```
+
+주의: plugin으로 설치해도 실제 5.5 Pro consult는 여전히 `@steipete/oracle` CLI를 통해 실행된다. 플러그인은 Codex가 이 workflow를 검색/설치/호출하기 쉽게 포장한 배포 단위다.
 
 ## 실제 동작 순서
 
@@ -243,6 +334,18 @@ Oracle dry-run smoke:
 ```
 
 `smoke-oracle.ps1`는 모델을 호출하지 않는다. dry-run만 한다.
+
+네 가지 표면을 한 번에 확인하려면 아래를 실행한다.
+
+```powershell
+.\scripts\validate-skill.ps1
+.\scripts\validate-claude-skill.ps1
+.\scripts\validate-codex-plugin.ps1
+.\scripts\validate-claude-plugin.ps1
+.\scripts\smoke-oracle.ps1
+.\scripts\smoke-claude-oracle.ps1
+.\scripts\smoke-claude-plugin-oracle.ps1
+```
 
 ## 추천 사용 사례
 

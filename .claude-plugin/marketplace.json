@@ -1,0 +1,18 @@
+{
+  "name": "oracle-consult-tools",
+  "description": "Oracle Consult plugins and skills for advisory second-opinion reviews.",
+  "owner": {
+    "name": "Moncaso"
+  },
+  "plugins": [
+    {
+      "name": "oracle-consult",
+      "source": "./claude/plugins/oracle-consult",
+      "description": "Advisory second-opinion reviews via steipete/oracle.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Moncaso"
+      }
+    }
+  ]
+}

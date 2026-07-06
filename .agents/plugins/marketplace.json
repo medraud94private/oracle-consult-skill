@@ -1,0 +1,20 @@
+{
+  "name": "oracle-consult-local",
+  "interface": {
+    "displayName": "Oracle Consult Local"
+  },
+  "plugins": [
+    {
+      "name": "oracle-consult",
+      "source": {
+        "source": "local",
+        "path": "./plugins/oracle-consult"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

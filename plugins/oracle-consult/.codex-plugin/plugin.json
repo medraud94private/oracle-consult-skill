@@ -1,0 +1,33 @@
+{
+  "name": "oracle-consult",
+  "version": "0.1.0+codex.local-20260706-plugin",
+  "description": "Codex plugin for advisory Oracle second-opinion reviews.",
+  "author": {
+    "name": "Moncaso",
+    "url": "https://github.com/medraud94private"
+  },
+  "homepage": "https://github.com/medraud94private/oracle-consult-skill",
+  "repository": "https://github.com/medraud94private/oracle-consult-skill",
+  "license": "MIT",
+  "keywords": [
+    "oracle",
+    "codex",
+    "second-opinion",
+    "review",
+    "gpt-5.5-pro"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Oracle Consult",
+    "shortDescription": "Advisory second-opinion reviews via Oracle.",
+    "longDescription": "Oracle Consult adds an explicit Codex skill for pressure-testing plans, bugs, and patches through steipete/oracle while keeping external model output advisory and locally verified.",
+    "developerName": "Moncaso",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "defaultPrompt": [
+      "Use $oracle-consult to review this patch plan."
+    ]
+  }
+}
