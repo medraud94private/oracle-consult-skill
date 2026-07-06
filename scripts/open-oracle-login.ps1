@@ -1,5 +1,5 @@
-param(
-    [ValidateSet("auto", "ko", "en")]
+﻿param(
+    [ValidateSet("auto", "ko", "en", "ja")]
     [string]$Language = "auto",
 
     [switch]$Yes,
@@ -15,14 +15,36 @@ function Resolve-Language {
     if ([System.Globalization.CultureInfo]::CurrentUICulture.Name -like "ko*") {
         return "ko"
     }
+    if ([System.Globalization.CultureInfo]::CurrentUICulture.Name -like "ja*") {
+        return "ja"
+    }
     return "en"
 }
 
 $script:Lang = Resolve-Language
 
-function Text([string]$Ko, [string]$En) {
+function Get-JaText([string]$En) {
+    switch -Exact ($En) {
+        "npx was not found. Install Node.js 24+ first." { return "npx が見つかりませんでした。先に Node.js 24+ をインストールしてください。" }
+        "This step can open a visible Chrome window controlled by Oracle." { return "この手順では、Oracle が制御する表示状態の Chrome ウィンドウを開く場合があります。" }
+        "ChatGPT sign-in is not automated. When the browser opens, sign in manually." { return "ChatGPT へのログインは自動化しません。ブラウザが開いたら手動でログインしてください。" }
+        "It sends only a small non-secret temporary file and a short setup prompt." { return "送信するのは、秘密情報を含まない小さな一時ファイルと短いセットアップ用プロンプトだけです。" }
+        "Continue? [y/N]" { return "続行しますか? [y/N]" }
+        "Skipping Oracle browser setup." { return "Oracle ブラウザ設定をスキップします。" }
+        "Starting Oracle browser setup. If Chrome opens, sign in to ChatGPT." { return "Oracle ブラウザ設定を開始します。Chrome が開いたら ChatGPT にログインしてください。" }
+        default { return $En }
+    }
+}
+
+function Text([string]$Ko, [string]$En, [string]$Ja = $null) {
     if ($script:Lang -eq "ko") {
         return $Ko
+    }
+    if ($script:Lang -eq "ja") {
+        if (-not [string]::IsNullOrEmpty($Ja)) {
+            return $Ja
+        }
+        return (Get-JaText $En)
     }
     return $En
 }
@@ -41,7 +63,7 @@ if (-not $Yes -and -not $DryRun) {
     Say "ChatGPT 로그인은 자동화하지 않습니다. 브라우저가 열리면 사용자가 직접 로그인해야 합니다." "ChatGPT sign-in is not automated. When the browser opens, sign in manually."
     Say "로그인 확인용으로 비밀이 없는 작은 임시 파일과 짧은 프롬프트만 보냅니다." "It sends only a small non-secret temporary file and a short setup prompt."
     $answer = Read-Host (Text "계속할까요? [y/N]" "Continue? [y/N]")
-    if ($answer -notmatch "^(y|yes|예|네|ㅇ|ㅖ)$") {
+    if ($answer -notmatch "^(y|yes|예|네|ㅇ|ㅖ|はい|ハイ)$") {
         Say "Oracle 브라우저 열기를 건너뜁니다." "Skipping Oracle browser setup."
         exit 0
     }

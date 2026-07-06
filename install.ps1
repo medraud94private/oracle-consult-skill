@@ -1,5 +1,5 @@
-param(
-    [ValidateSet("auto", "ko", "en")]
+﻿param(
+    [ValidateSet("auto", "ko", "en", "ja")]
     [string]$Language = "auto",
 
     [ValidateSet("interactive", "all", "codex", "claude", "skills", "plugins", "codex-skill", "codex-plugin", "claude-skill", "claude-plugin", "oracle-login")]
@@ -37,9 +37,13 @@ function Resolve-Language {
         Write-Host "Choose language / 언어를 선택하세요"
         Write-Host "  [1] 한국어"
         Write-Host "  [2] English"
-        $choice = Read-Host "1/2 (default: 1)"
+        Write-Host "  [3] 日本語"
+        $choice = Read-Host "1/2/3 (default: 1)"
         if ($choice -eq "2") {
             return "en"
+        }
+        if ($choice -eq "3") {
+            return "ja"
         }
         return "ko"
     }
@@ -47,14 +51,54 @@ function Resolve-Language {
     if ([System.Globalization.CultureInfo]::CurrentUICulture.Name -like "ko*") {
         return "ko"
     }
+    if ([System.Globalization.CultureInfo]::CurrentUICulture.Name -like "ja*") {
+        return "ja"
+    }
     return "en"
 }
 
 $script:Lang = Resolve-Language
 
-function Text([string]$Ko, [string]$En) {
+function Get-JaText([string]$En) {
+    switch -Exact ($En) {
+        "Choose what to install." { return "インストールする内容を選択してください。" }
+        "  [1] Recommended: Codex skill + Codex plugin + Claude Code skill + Claude Code plugin" { return "  [1] 推奨: Codex skill + Codex plugin + Claude Code skill + Claude Code plugin" }
+        "  [2] Codex only: skill + plugin" { return "  [2] Codex のみ: skill + plugin" }
+        "  [3] Claude Code only: skill + plugin" { return "  [3] Claude Code のみ: skill + plugin" }
+        "  [4] Skills only: Codex skill + Claude Code skill" { return "  [4] Skills のみ: Codex skill + Claude Code skill" }
+        "  [5] Plugins only: Codex plugin + Claude Code plugin" { return "  [5] Plugins のみ: Codex plugin + Claude Code plugin" }
+        "  [6] Open Oracle browser login only" { return "  [6] Oracle ブラウザログインだけを開く" }
+        "  [7] Cancel" { return "  [7] キャンセル" }
+        "Choose install scope. Repository-level install is recommended." { return "インストール範囲を選択してください。リポジトリ単位のインストールを推奨します。" }
+        "  [1] Recommended: install only into the current/target repository" { return "  [1] 推奨: 現在または指定したリポジトリにのみインストール" }
+        "  [2] Install globally for this user" { return "  [2] このユーザー全体にインストール" }
+        "Enter the target repository path." { return "対象リポジトリのパスを入力してください。" }
+        "Prefer the actual work repository, not necessarily this installer repository." { return "installer repo ではなく、実際に作業する repo を指定することを推奨します。" }
+        "Canceled." { return "キャンセルしました。" }
+        "Starting Oracle Consult setup." { return "Oracle Consult のセットアップを開始します。" }
+        "Install scope: global user" { return "インストール範囲: ユーザー全体" }
+        "Open Oracle's Chrome profile for ChatGPT login setup? You still sign in manually." { return "Oracle 専用の Chrome プロファイルを開いて ChatGPT ログイン設定に進みますか? ログインは手動です。" }
+        "Setup complete." { return "セットアップが完了しました。" }
+        "Only Oracle browser login setup was run." { return "Oracle ブラウザログインの準備だけを実行しました。" }
+        "Open a new Codex/Claude Code session from that repository root." { return "そのリポジトリルートから Codex/Claude Code を新しく開いて使ってください。" }
+        "It is available across repositories, but already-open sessions may need a new thread or restart." { return "他のリポジトリでも利用できますが、既に開いているセッションは新しいスレッドまたは再起動が必要な場合があります。" }
+        "Codex skill: explicitly invoke `$oracle-consult-skill." { return "Codex skill: `$oracle-consult-skill を明示的に呼び出します。" }
+        "Codex plugin: install Oracle Consult from /plugins, then invoke `$oracle-consult in a new thread." { return "Codex plugin: /plugins から Oracle Consult をインストールし、新しい thread で `$oracle-consult を呼び出します。" }
+        "Claude Code skill: invoke /oracle-consult-skill." { return "Claude Code skill: /oracle-consult-skill で呼び出します。" }
+        "Claude Code plugin: invoke /oracle-consult:oracle-consult." { return "Claude Code plugin: /oracle-consult:oracle-consult で呼び出します。" }
+        default { return $En }
+    }
+}
+
+function Text([string]$Ko, [string]$En, [string]$Ja = $null) {
     if ($script:Lang -eq "ko") {
         return $Ko
+    }
+    if ($script:Lang -eq "ja") {
+        if (-not [string]::IsNullOrEmpty($Ja)) {
+            return $Ja
+        }
+        return (Get-JaText $En)
     }
     return $En
 }
@@ -72,6 +116,9 @@ function Ask-YesNo([string]$Ko, [string]$En, [bool]$DefaultYes = $false) {
     $answer = Read-Host ("{0} {1}" -f (Text $Ko $En), $suffix)
     if ([string]::IsNullOrWhiteSpace($answer)) {
         return $DefaultYes
+    }
+    if ($answer -match "^(y|yes|はい|ハイ)$") {
+        return $true
     }
     return $answer -match "^(y|yes|예|네|ㅇ|ㅖ)$"
 }

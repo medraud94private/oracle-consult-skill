@@ -42,7 +42,7 @@ Usage:
   install.cmd [options]
 
 Options:
-  --language ko|en|auto        Installer language. Default: auto
+  --language ko|en|ja|auto     Installer language. Default: auto
   --preset NAME                all|codex|claude|skills|plugins|codex-skill|codex-plugin|claude-skill|claude-plugin|oracle-login|interactive
   --scope repo|user|interactive
                                repo is recommended. Default: interactive
@@ -56,6 +56,7 @@ Options:
 Examples:
   install.cmd
   install.cmd --language ko --preset all --scope repo --repo-path C:\\path\\to\\repo --force --no-prompt
+  install.cmd --language ja --preset all --scope repo --repo-path C:\\path\\to\\repo --force --no-prompt
   node install.mjs --language ko --preset all --scope user --force --no-prompt
 `);
 }
@@ -98,7 +99,7 @@ function parseArgs(argv) {
     }
   }
 
-  if (!["auto", "ko", "en"].includes(options.language)) {
+  if (!["auto", "ko", "en", "ja"].includes(options.language)) {
     throw new Error(`Invalid --language: ${options.language}`);
   }
   if (!presets.has(options.preset)) {
@@ -122,7 +123,10 @@ async function ask(prompt) {
 
 function detectLanguageNoPrompt() {
   const locale = `${process.env.LC_ALL ?? ""}${process.env.LANG ?? ""}${process.env.LANGUAGE ?? ""}`;
-  return locale.toLowerCase().startsWith("ko") ? "ko" : "en";
+  const normalized = locale.toLowerCase();
+  if (normalized.startsWith("ko")) return "ko";
+  if (normalized.startsWith("ja")) return "ja";
+  return "en";
 }
 
 async function resolveLanguage() {
@@ -133,14 +137,45 @@ async function resolveLanguage() {
   console.log("Choose language / 언어를 선택하세요");
   console.log("  [1] 한국어");
   console.log("  [2] English");
-  const choice = await ask("1/2 (default: 1): ");
-  return choice === "2" ? "en" : "ko";
+  console.log("  [3] 日本語");
+  const choice = await ask("1/2/3 (default: 1): ");
+  return choice === "2" ? "en" : choice === "3" ? "ja" : "ko";
 }
 
 const lang = await resolveLanguage();
 
-function text(ko, en) {
-  return lang === "ko" ? ko : en;
+const jaTextByEnglish = new Map([
+  ["Choose what to install.", "インストールする内容を選択してください。"],
+  ["  [1] Recommended: Codex skill + Codex plugin + Claude Code skill + Claude Code plugin", "  [1] 推奨: Codex skill + Codex plugin + Claude Code skill + Claude Code plugin"],
+  ["  [2] Codex only: skill + plugin", "  [2] Codex のみ: skill + plugin"],
+  ["  [3] Claude Code only: skill + plugin", "  [3] Claude Code のみ: skill + plugin"],
+  ["  [4] Skills only: Codex skill + Claude Code skill", "  [4] Skills のみ: Codex skill + Claude Code skill"],
+  ["  [5] Plugins only: Codex plugin + Claude Code plugin", "  [5] Plugins のみ: Codex plugin + Claude Code plugin"],
+  ["  [6] Open Oracle browser login only", "  [6] Oracle ブラウザログインだけを開く"],
+  ["  [7] Cancel", "  [7] キャンセル"],
+  ["Choose install scope. Repository-level install is recommended.", "インストール範囲を選択してください。リポジトリ単位のインストールを推奨します。"],
+  ["  [1] Recommended: install only into the current/target repository", "  [1] 推奨: 現在または指定したリポジトリにのみインストール"],
+  ["  [2] Install globally for this user", "  [2] このユーザー全体にインストール"],
+  ["Enter the target repository path.", "対象リポジトリのパスを入力してください。"],
+  ["Prefer the actual work repository, not necessarily this installer repository.", "installer repo ではなく、実際に作業する repo を指定することを推奨します。"],
+  ["Canceled.", "キャンセルしました。"],
+  ["Starting Oracle Consult setup.", "Oracle Consult のセットアップを開始します。"],
+  ["Install scope: global user", "インストール範囲: ユーザー全体"],
+  ["Open Oracle's Chrome profile for ChatGPT login setup? You still sign in manually.", "Oracle 専用の Chrome プロファイルを開いて ChatGPT ログイン設定に進みますか? ログインは手動です。"],
+  ["Setup complete.", "セットアップが完了しました。"],
+  ["Only Oracle browser login setup was run.", "Oracle ブラウザログインの準備だけを実行しました。"],
+  ["Open a new Codex/Claude Code session from that repository root.", "そのリポジトリルートから Codex/Claude Code を新しく開いて使ってください。"],
+  ["It is available across repositories, but already-open sessions may need a new thread or restart.", "他のリポジトリでも利用できますが、既に開いているセッションは新しいスレッドまたは再起動が必要な場合があります。"],
+  ["Codex skill: explicitly invoke $oracle-consult-skill.", "Codex skill: $oracle-consult-skill を明示的に呼び出します。"],
+  ["Codex plugin: install Oracle Consult from /plugins, then invoke $oracle-consult in a new thread.", "Codex plugin: /plugins から Oracle Consult をインストールし、新しい thread で $oracle-consult を呼び出します。"],
+  ["Claude Code skill: invoke /oracle-consult-skill.", "Claude Code skill: /oracle-consult-skill で呼び出します。"],
+  ["Claude Code plugin: invoke /oracle-consult:oracle-consult.", "Claude Code plugin: /oracle-consult:oracle-consult で呼び出します。"],
+]);
+
+function text(ko, en, ja) {
+  if (lang === "ko") return ko;
+  if (lang === "ja") return ja ?? jaTextByEnglish.get(en) ?? en;
+  return en;
 }
 
 function say(ko, en) {
@@ -152,6 +187,7 @@ async function askYesNo(ko, en, defaultYes = false) {
   const suffix = defaultYes ? "[Y/n]" : "[y/N]";
   const answer = await ask(`${text(ko, en)} ${suffix} `);
   if (!answer) return defaultYes;
+  if (/^(y|yes|はい|ハイ)$/i.test(answer)) return true;
   return /^(y|yes|예|네|ㅇ|ㅖ)$/i.test(answer);
 }
 

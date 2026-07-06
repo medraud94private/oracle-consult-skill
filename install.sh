@@ -18,7 +18,7 @@ Usage:
   ./install.sh [options]
 
 Options:
-  --language ko|en|auto        Installer language. Default: auto
+  --language ko|en|ja|auto     Installer language. Default: auto
   --preset NAME                all|codex|claude|skills|plugins|codex-skill|codex-plugin|claude-skill|claude-plugin|oracle-login|interactive
   --scope repo|user|interactive
                                repo is recommended. Default: interactive
@@ -32,6 +32,7 @@ Options:
 Examples:
   ./install.sh
   ./install.sh --language ko --preset all --scope repo --repo-path /path/to/repo --force --no-prompt
+  ./install.sh --language ja --preset all --scope repo --repo-path /path/to/repo --force --no-prompt
   ./install.sh --language ko --preset all --scope user --force --no-prompt
   ./install.sh --language ko --preset all --scope repo --repo-path /path/to/repo --force --no-prompt --open-oracle
 EOF
@@ -64,7 +65,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-case "$LANGUAGE" in auto|ko|en) ;; *) echo "Invalid --language: $LANGUAGE" >&2; exit 1 ;; esac
+case "$LANGUAGE" in auto|ko|en|ja) ;; *) echo "Invalid --language: $LANGUAGE" >&2; exit 1 ;; esac
 case "$PRESET" in interactive|all|codex|claude|skills|plugins|codex-skill|codex-plugin|claude-skill|claude-plugin|oracle-login) ;; *) echo "Invalid --preset: $PRESET" >&2; exit 1 ;; esac
 case "$SCOPE" in interactive|repo|user) ;; *) echo "Invalid --scope: $SCOPE" >&2; exit 1 ;; esac
 if [[ "$OPEN_ORACLE" -eq 1 && "$NO_OPEN_ORACLE" -eq 1 ]]; then
@@ -85,9 +86,12 @@ detect_language() {
     echo "Choose language / 언어를 선택하세요" >&2
     echo "  [1] 한국어" >&2
     echo "  [2] English" >&2
-    read -r -p "1/2 (default: 1): " choice
+    echo "  [3] 日本語" >&2
+    read -r -p "1/2/3 (default: 1): " choice
     if [[ "$choice" == "2" ]]; then
       printf '%s\n' "en"
+    elif [[ "$choice" == "3" ]]; then
+      printf '%s\n' "ja"
     else
       printf '%s\n' "ko"
     fi
@@ -96,6 +100,8 @@ detect_language() {
 
   if [[ "${LC_ALL:-${LANG:-}}" == ko* ]]; then
     printf '%s\n' "ko"
+  elif [[ "${LC_ALL:-${LANG:-}}" == ja* ]]; then
+    printf '%s\n' "ja"
   else
     printf '%s\n' "en"
   fi
@@ -103,9 +109,42 @@ detect_language() {
 
 INSTALL_LANG="$(detect_language)"
 
+ja_text() {
+  case "$1" in
+    "Choose what to install.") printf '%s' "インストールする内容を選択してください。" ;;
+    "  [1] Recommended: Codex skill + Codex plugin + Claude Code skill + Claude Code plugin") printf '%s' "  [1] 推奨: Codex skill + Codex plugin + Claude Code skill + Claude Code plugin" ;;
+    "  [2] Codex only: skill + plugin") printf '%s' "  [2] Codex のみ: skill + plugin" ;;
+    "  [3] Claude Code only: skill + plugin") printf '%s' "  [3] Claude Code のみ: skill + plugin" ;;
+    "  [4] Skills only: Codex skill + Claude Code skill") printf '%s' "  [4] Skills のみ: Codex skill + Claude Code skill" ;;
+    "  [5] Plugins only: Codex plugin + Claude Code plugin") printf '%s' "  [5] Plugins のみ: Codex plugin + Claude Code plugin" ;;
+    "  [6] Open Oracle browser login only") printf '%s' "  [6] Oracle ブラウザログインだけを開く" ;;
+    "  [7] Cancel") printf '%s' "  [7] キャンセル" ;;
+    "Choose install scope. Repository-level install is recommended.") printf '%s' "インストール範囲を選択してください。リポジトリ単位のインストールを推奨します。" ;;
+    "  [1] Recommended: install only into the current/target repository") printf '%s' "  [1] 推奨: 現在または指定したリポジトリにのみインストール" ;;
+    "  [2] Install globally for this user") printf '%s' "  [2] このユーザー全体にインストール" ;;
+    "Enter the target repository path.") printf '%s' "対象リポジトリのパスを入力してください。" ;;
+    "Prefer the actual work repository, not necessarily this installer repository.") printf '%s' "installer repo ではなく、実際に作業する repo を指定することを推奨します。" ;;
+    "Canceled.") printf '%s' "キャンセルしました。" ;;
+    "Starting Oracle Consult setup.") printf '%s' "Oracle Consult のセットアップを開始します。" ;;
+    "Install scope: global user") printf '%s' "インストール範囲: ユーザー全体" ;;
+    "Open Oracle's Chrome profile for ChatGPT login setup? You still sign in manually.") printf '%s' "Oracle 専用の Chrome プロファイルを開いて ChatGPT ログイン設定に進みますか? ログインは手動です。" ;;
+    "Setup complete.") printf '%s' "セットアップが完了しました。" ;;
+    "Only Oracle browser login setup was run.") printf '%s' "Oracle ブラウザログインの準備だけを実行しました。" ;;
+    "Open a new Codex/Claude Code session from that repository root.") printf '%s' "そのリポジトリルートから Codex/Claude Code を新しく開いて使ってください。" ;;
+    "It is available across repositories, but already-open sessions may need a new thread or restart.") printf '%s' "他のリポジトリでも利用できますが、既に開いているセッションは新しいスレッドまたは再起動が必要な場合があります。" ;;
+    "Codex skill: explicitly invoke \$oracle-consult-skill.") printf '%s' "Codex skill: \$oracle-consult-skill を明示的に呼び出します。" ;;
+    "Codex plugin: install Oracle Consult from /plugins, then invoke \$oracle-consult in a new thread.") printf '%s' "Codex plugin: /plugins から Oracle Consult をインストールし、新しい thread で \$oracle-consult を呼び出します。" ;;
+    "Claude Code skill: invoke /oracle-consult-skill.") printf '%s' "Claude Code skill: /oracle-consult-skill で呼び出します。" ;;
+    "Claude Code plugin: invoke /oracle-consult:oracle-consult.") printf '%s' "Claude Code plugin: /oracle-consult:oracle-consult で呼び出します。" ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
 text() {
   if [[ "$INSTALL_LANG" == "ko" ]]; then
     printf '%s' "$1"
+  elif [[ "$INSTALL_LANG" == "ja" ]]; then
+    ja_text "$2"
   else
     printf '%s' "$2"
   fi
@@ -142,6 +181,9 @@ ask_yes_no() {
   if [[ -z "$answer" ]]; then
     [[ "$default_yes" -eq 1 ]]
     return
+  fi
+  if [[ "$answer" =~ ^([yY]|yes|YES|はい|ハイ)$ ]]; then
+    return 0
   fi
   [[ "$answer" =~ ^([yY]|yes|YES|예|네|ㅇ|ㅖ)$ ]]
 }

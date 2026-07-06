@@ -13,7 +13,7 @@ Usage:
   ./scripts/open-oracle-login.sh [options]
 
 Options:
-  --language ko|en|auto
+  --language ko|en|ja|auto
   --yes                  Skip confirmation
   --dry-run              Preview Oracle command without opening browser
   -h, --help             Show help
@@ -37,13 +37,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-case "$LANGUAGE" in auto|ko|en) ;; *) echo "Invalid --language: $LANGUAGE" >&2; exit 1 ;; esac
+case "$LANGUAGE" in auto|ko|en|ja) ;; *) echo "Invalid --language: $LANGUAGE" >&2; exit 1 ;; esac
 
 detect_language() {
   if [[ "$LANGUAGE" != "auto" ]]; then
     printf '%s\n' "$LANGUAGE"
   elif [[ "${LC_ALL:-${LANG:-}}" == ko* ]]; then
     printf '%s\n' "ko"
+  elif [[ "${LC_ALL:-${LANG:-}}" == ja* ]]; then
+    printf '%s\n' "ja"
   else
     printf '%s\n' "en"
   fi
@@ -51,9 +53,24 @@ detect_language() {
 
 INSTALL_LANG="$(detect_language)"
 
+ja_text() {
+  case "$1" in
+    "npx was not found. Install Node.js 24+ first.") printf '%s' "npx が見つかりませんでした。先に Node.js 24+ をインストールしてください。" ;;
+    "This step can open a visible Chrome window controlled by Oracle.") printf '%s' "この手順では、Oracle が制御する表示状態の Chrome ウィンドウを開く場合があります。" ;;
+    "ChatGPT sign-in is not automated. When the browser opens, sign in manually.") printf '%s' "ChatGPT へのログインは自動化しません。ブラウザが開いたら手動でログインしてください。" ;;
+    "It sends only a small non-secret temporary file and a short setup prompt.") printf '%s' "送信するのは、秘密情報を含まない小さな一時ファイルと短いセットアップ用プロンプトだけです。" ;;
+    "Continue? [y/N]") printf '%s' "続行しますか? [y/N]" ;;
+    "Skipping Oracle browser setup.") printf '%s' "Oracle ブラウザ設定をスキップします。" ;;
+    "Starting Oracle browser setup. If Chrome opens, sign in to ChatGPT.") printf '%s' "Oracle ブラウザ設定を開始します。Chrome が開いたら ChatGPT にログインしてください。" ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
 text() {
   if [[ "$INSTALL_LANG" == "ko" ]]; then
     printf '%s' "$1"
+  elif [[ "$INSTALL_LANG" == "ja" ]]; then
+    ja_text "$2"
   else
     printf '%s' "$2"
   fi
@@ -75,7 +92,7 @@ if [[ "$YES" -ne 1 && "$DRY_RUN" -ne 1 ]]; then
   say "ChatGPT 로그인은 자동화하지 않습니다. 브라우저가 열리면 사용자가 직접 로그인해야 합니다." "ChatGPT sign-in is not automated. When the browser opens, sign in manually."
   say "로그인 확인용으로 비밀이 없는 작은 임시 파일과 짧은 프롬프트만 보냅니다." "It sends only a small non-secret temporary file and a short setup prompt."
   read -r -p "$(text "계속할까요? [y/N]" "Continue? [y/N]") " answer
-  if [[ ! "$answer" =~ ^([yY]|yes|YES|예|네|ㅇ|ㅖ)$ ]]; then
+  if [[ ! "$answer" =~ ^([yY]|yes|YES|예|네|ㅇ|ㅖ|はい|ハイ)$ ]]; then
     say "Oracle 브라우저 열기를 건너뜁니다." "Skipping Oracle browser setup."
     exit 0
   fi

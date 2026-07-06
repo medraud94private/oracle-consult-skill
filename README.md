@@ -18,6 +18,12 @@ curl -fsSL https://raw.githubusercontent.com/medraud94private/oracle-consult-ski
 ```
 
 With no arguments, this installs everything repo-scoped into the current project and does not open the Oracle login browser.
+Installer language can be `auto`, `ko`, `en`, or `ja`. `auto` now detects Korean and Japanese locales; pass `--language ja` if you want to force Japanese installer text.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.sh \
+  | bash -s -- --language ja --preset all --scope repo --force --no-prompt --no-open-oracle
+```
 
 Windows without PowerShell:
 
@@ -26,6 +32,12 @@ cd C:\path\to\your-project
 curl -fsSLO https://raw.githubusercontent.com/medraud94private/oracle-consult-skill/main/scripts/install-latest.cmd
 install-latest.cmd
 del install-latest.cmd
+```
+
+To force Japanese text in `cmd.exe`, pass the full target path explicitly:
+
+```bat
+install-latest.cmd --language ja --preset all --scope repo --repo-path C:\path\to\your-project --force --no-prompt --no-open-oracle
 ```
 
 <details>
@@ -78,6 +90,7 @@ brew install node
 You also need Chrome installed and a ChatGPT account you can sign into when Oracle opens the browser.
 
 The wizard lets you choose a language, install scope, install target, and whether to open Oracle's browser login setup. Pick repository-level install and enter the real target repo path when prompted. The no-git latest installer skips the wizard by default and uses the directory you ran it from as the target repo.
+Supported installer languages are Korean, English, and Japanese.
 
 Install modes are intentionally name-separated: standalone skills install as `oracle-consult-skill`, while plugins keep the `oracle-consult` namespace. If you are upgrading from an older standalone install, use `-Force` / `--force`; the installer removes the old standalone `oracle-consult` skill folder when it matches this package's safety marker.
 

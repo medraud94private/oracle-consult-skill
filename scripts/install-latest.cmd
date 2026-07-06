@@ -77,5 +77,7 @@ echo.
 echo Default behavior with no arguments:
 echo   --language auto --preset all --scope repo --repo-path "%%CD%%" --force --no-prompt --no-open-oracle
 echo.
+echo Installer language values: auto, ko, en, ja.
+echo.
 echo Pass normal install.cmd arguments to override.
 exit /b 0
