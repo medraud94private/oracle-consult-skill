@@ -411,6 +411,7 @@ npx -y @steipete/oracle --dry-run summary --files-report `
 
 ```powershell
 npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
+  --browser-hide-window `
   --slug "<short-topic>" `
   -p "<standalone consult prompt>" `
   --file "path/to/key/file.py"
@@ -437,6 +438,17 @@ npx -y @steipete/oracle --engine browser --browser-manual-login `
 ```
 
 브라우저가 뜨면 ChatGPT에 로그인한다. 이후에는 같은 프로필을 재사용한다.
+
+첫 로그인은 사용자가 직접 로그인해야 하므로 visible 브라우저가 필요하다. 하지만 로그인 이후 일반 consult는 `--browser-hide-window`를 붙이면 Chrome을 띄운 뒤 숨겨서 덜 거슬리게 만들 수 있다. 이미 열려 있는 ChatGPT 탭을 재사용하고 싶으면 아래처럼 시도할 수 있다.
+
+```powershell
+npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
+  --browser-attach-running `
+  --browser-tab current `
+  --slug "<short-topic>" `
+  -p "<standalone consult prompt>" `
+  --file "path/to/key/file.py"
+```
 
 ## Oracle 패키지를 설치해야 하나
 

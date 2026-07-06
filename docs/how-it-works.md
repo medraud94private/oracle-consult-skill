@@ -77,6 +77,8 @@ Oracle browser setup can be started by the wizard or directly:
 
 This opens Oracle's browser-login flow but does not automate ChatGPT credentials or 2FA. The user signs in manually.
 
+The first login setup must be visible. After login, normal browser consults can use `--browser-hide-window` to hide Chrome after startup, or `--browser-attach-running --browser-tab current` to reuse an already-open ChatGPT tab.
+
 ## Wrapper Responsibilities
 
 Each wrapper:
@@ -127,6 +129,7 @@ Browser consult:
 
 ```powershell
 npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
+  --browser-hide-window `
   --slug "<short-topic>" `
   -p "<standalone consult prompt>" `
   --file "src/key-file.ts" `

@@ -269,7 +269,26 @@ npx -y @steipete/oracle --engine browser --browser-manual-login `
   --file "$env:USERPROFILE\.agents\skills\oracle-consult-skill\SKILL.md"
 ```
 
-Then run consults with explicit prompts and tight file sets.
+Then run consults with explicit prompts and tight file sets. The first login run must open a visible browser because you sign in manually. After that, use `--browser-hide-window` for ordinary browser consults to hide Chrome after startup:
+
+```powershell
+npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
+  --browser-hide-window `
+  --slug "<short-topic>" `
+  -p "<standalone consult prompt>" `
+  --file "path/to/key/file.py"
+```
+
+If you already have a ChatGPT tab open and want Oracle to reuse that browser instead of launching its own window, try:
+
+```powershell
+npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
+  --browser-attach-running `
+  --browser-tab current `
+  --slug "<short-topic>" `
+  -p "<standalone consult prompt>" `
+  --file "path/to/key/file.py"
+```
 
 ## Publish To Your GitHub
 

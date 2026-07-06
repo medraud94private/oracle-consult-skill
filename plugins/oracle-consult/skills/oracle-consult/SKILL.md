@@ -68,15 +68,16 @@ If browser mode has never been initialized on this computer, run the one-time vi
 npx -y @steipete/oracle --engine browser --browser-manual-login `
   --browser-keep-browser `
   -p "HI" `
-  --file "$env:USERPROFILE\.agents\skills\oracle-consult\SKILL.md"
+  --file "$env:USERPROFILE\.agents\plugins\plugins\oracle-consult\skills\oracle-consult\SKILL.md"
 ```
 
-Retry the real consult only after that profile is signed in. If the user prefers an already signed-in Chrome session, try `--browser-attach-running` instead, but treat attach failures as setup blockers rather than rerunning the same prompt repeatedly.
+Retry the real consult only after that profile is signed in. The login step must be visible because the user signs in manually. For normal consults after login, prefer `--browser-hide-window` so Oracle can launch Chrome and hide it after startup. If the user already has a ChatGPT tab open and wants Oracle to reuse it, try `--browser-attach-running --browser-tab current` instead, but treat attach failures as setup blockers rather than rerunning the same prompt repeatedly.
 
 Preferred deep consult path:
 
 ```powershell
 npx -y @steipete/oracle --engine browser --model gpt-5.5-pro `
+  --browser-hide-window `
   --slug "<short-topic>" `
   -p "<standalone consult prompt>" `
   --file "path/to/key/file.py"

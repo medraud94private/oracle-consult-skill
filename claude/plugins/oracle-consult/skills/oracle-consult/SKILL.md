@@ -74,12 +74,13 @@ npx -y @steipete/oracle --engine browser --browser-manual-login \
   --file "$HOME/.claude/skills/oracle-consult-plugin/skills/oracle-consult/SKILL.md"
 ```
 
-Retry the real consult only after that profile is signed in. If the user prefers an already signed-in Chrome session, try `--browser-attach-running` instead, but treat attach failures as setup blockers rather than rerunning the same prompt repeatedly.
+Retry the real consult only after that profile is signed in. The login step must be visible because the user signs in manually. For normal consults after login, prefer `--browser-hide-window` so Oracle can launch Chrome and hide it after startup. If the user already has a ChatGPT tab open and wants Oracle to reuse it, try `--browser-attach-running --browser-tab current` instead, but treat attach failures as setup blockers rather than rerunning the same prompt repeatedly.
 
 Preferred deep consult path:
 
 ```bash
 npx -y @steipete/oracle --engine browser --model gpt-5.5-pro \
+  --browser-hide-window \
   --slug "<short-topic>" \
   -p "<standalone consult prompt>" \
   --file "path/to/key/file.py"
